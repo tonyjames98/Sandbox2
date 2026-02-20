@@ -204,27 +204,20 @@ function loadSampleScenario() {
 // Enhanced UX features
 function setupKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
-        // Ctrl/Cmd + S to save
-        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-            e.preventDefault();
-            saveData();
-            showToast('Data saved!', 'success', 2000);
-        }
-        
         // Ctrl/Cmd + N for new investment
-        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'n' || e.key === 'N')) {
             e.preventDefault();
             showAddInvestmentModal();
         }
         
         // Ctrl/Cmd + E for new event
-        if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'e' || e.key === 'E')) {
             e.preventDefault();
             showAddEventModal('expense');
         }
 
         // Ctrl/Cmd + G for new goal
-        if ((e.ctrlKey || e.metaKey) && e.key === 'g') {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'g' || e.key === 'G')) {
             e.preventDefault();
             showAddGoalModal();
         }
@@ -373,6 +366,7 @@ function resetAllData() {
         renderInvestments();
         renderEvents();
         renderGoals();
+        resetWhatIfSliders();
         
         // Run projection with empty data to clear charts
         if (document.getElementById('dashboard').classList.contains('active')) {
@@ -1129,9 +1123,24 @@ function updateEventFormOptions() {
     
     const eventSource = document.getElementById('event-source');
     const eventTarget = document.getElementById('event-target');
+    const boostTarget = document.getElementById('savings-boost-target');
     
     if (eventSource) eventSource.innerHTML = noSourceOption + options;
     if (eventTarget) eventTarget.innerHTML = noTargetOption + options;
+    if (boostTarget) {
+        const currentVal = boostTarget.value;
+        boostTarget.innerHTML = options; // No "Proportional" option
+        
+        // Find highest balance asset as default
+        const highestAsset = investments.length > 0 ? 
+            [...investments].sort((a, b) => (b.amount || 0) - (a.amount || 0))[0] : null;
+            
+        if (currentVal && investments.some(i => i.id === currentVal)) {
+            boostTarget.value = currentVal;
+        } else if (highestAsset) {
+            boostTarget.value = highestAsset.id;
+        }
+    }
 
     // Find highest balance asset as default for withdrawals
     const highestAsset = investments.length > 0 ? 
@@ -1581,7 +1590,9 @@ function updateWhatIf() {
     
     // Update labels
     document.getElementById('market-offset-val').textContent = (marketOffset > 0 ? '+' : '') + marketOffset.toFixed(1) + '%';
-    document.getElementById('savings-boost-val').textContent = '$' + formatNumber(savingsBoost);
+    const boostDisplay = (savingsBoost > 0 ? '+' : '') + '$' + formatNumber(savingsBoost);
+    document.getElementById('savings-boost-val').textContent = boostDisplay;
+    document.getElementById('savings-boost-val').className = savingsBoost >= 0 ? 'text-success' : 'text-danger';
     
     // Show/hide reset button
     const hasChanges = marketOffset !== 0 || savingsBoost !== 0;
@@ -1597,6 +1608,8 @@ function updateWhatIf() {
 function resetWhatIfSliders() {
     document.getElementById('market-performance-slider').value = 0;
     document.getElementById('savings-boost-slider').value = 0;
+    const boostTarget = document.getElementById('savings-boost-target');
+    if (boostTarget) boostTarget.value = '';
     updateWhatIf();
 }
 
@@ -1682,13 +1695,39 @@ function calculateProjection(years) {
                 });
             }
 
-            // Apply Savings Boost
-            if (savingsBoost > 0) {
+            // Apply What-If Savings Boost/Expense
+            if (savingsBoost !== 0) {
                 const annualBoost = savingsBoost * 12;
-                const targetId = investments.length > 0 ? (investments.find(i => i.type !== 'Debt')?.id || investments[0].id) : 'virtual';
-                currentBalances[targetId] = (currentBalances[targetId] || 0) + annualBoost;
-                yearData.income += annualBoost;
-                yearData.events.push(`What-If Savings Boost: $${formatNumber(annualBoost)}`);
+                const boostTargetEl = document.getElementById('savings-boost-target');
+                let selectedTargetId = boostTargetEl ? boostTargetEl.value : '';
+                
+                // If target selection is lost or doesn't exist, find highest asset or fallback to virtual
+                if (!selectedTargetId || currentBalances[selectedTargetId] === undefined) {
+                    const potentialSources = Object.keys(currentBalances).filter(id => {
+                        const inv = investments.find(i => i.id === id);
+                        return !inv || inv.type !== 'Debt';
+                    });
+                    
+                    if (potentialSources.length > 0) {
+                        // Sort by current balance to target highest
+                        selectedTargetId = potentialSources.sort((a, b) => currentBalances[b] - currentBalances[a])[0];
+                    } else {
+                        selectedTargetId = 'virtual';
+                    }
+                }
+                
+                if (currentBalances[selectedTargetId] === undefined) {
+                    currentBalances[selectedTargetId] = 0;
+                }
+                
+                currentBalances[selectedTargetId] += annualBoost;
+                
+                if (savingsBoost > 0) {
+                    yearData.income += annualBoost;
+                }
+                yearData.growth += annualBoost;
+                const boostLabel = savingsBoost > 0 ? 'What-If Boost' : 'What-If Expense';
+                yearData.events.push(`${boostLabel}: ${savingsBoost > 0 ? '+' : '-'}$${formatNumber(Math.abs(annualBoost))}`);
             }
 
             // Apply Debt Payments
@@ -1699,8 +1738,16 @@ function calculateProjection(years) {
                     const actualPayment = Math.min(annualPayment, remainingDebt);
                     if (actualPayment > 0) {
                         currentBalances[debt.id] += actualPayment;
-                        const sourceId = investments.find(i => i.type !== 'Debt' && currentBalances[i.id] > 0)?.id || 'virtual';
-                        currentBalances[sourceId] = (currentBalances[sourceId] || 0) - actualPayment;
+                        // Find a source account with positive balance, or use virtual
+                        const potentialSources = Object.keys(currentBalances).filter(id => id !== debt.id && currentBalances[id] > 0);
+                        const sourceId = potentialSources.length > 0 ? potentialSources[0] : 'virtual';
+                        
+                        // Ensure sourceId exists in currentBalances to avoid NaN
+                        if (currentBalances[sourceId] === undefined) {
+                            currentBalances[sourceId] = 0;
+                        }
+                        
+                        currentBalances[sourceId] -= actualPayment;
                         yearData.events.push(`Debt Payment: ${debt.name} (-$${formatNumber(actualPayment)})`);
                     }
                 }
@@ -1761,8 +1808,11 @@ function calculateProjection(years) {
         }
         // Financial Independence (Passive growth > Expenses)
         const annualExpenses = events
-            .filter(e => e.type === 'recurring')
-            .reduce((sum, e) => sum + (e.amount * (e.frequency === 'monthly' ? 12 : e.frequency === 'quarterly' ? 4 : 1)), 0);
+            .filter(e => e.type === 'recurring' || e.isRecurring || (e.frequency && e.frequency !== 'one-time'))
+            .reduce((sum, e) => {
+                const multiplier = e.frequency === 'monthly' ? 12 : e.frequency === 'quarterly' ? 4 : 1;
+                return sum + (e.amount * multiplier);
+            }, 0);
         if (yearData.investmentGrowth > annualExpenses && annualExpenses > 0 && (year === 0 || projection[year-1].investmentGrowth <= annualExpenses)) {
             yearData.milestones.push('Financial Independence 🚀');
         }
@@ -1804,13 +1854,20 @@ function applyEventToVirtual(event, balances, yearData) {
 
 function getEventsForYear(year, projectionEndYear) {
     const yearEvents = [];
-    const getYearFromStr = (str) => str ? parseInt(str.split('-')[0]) : null;
+    const getYearFromStr = (str) => {
+        if (!str) return null;
+        const parts = str.split('-');
+        return parts.length > 0 ? parseInt(parts[0]) : null;
+    };
     
     events.forEach(event => {
         if (event.type === 'rebalancing') return; // Handled separately
 
-        if (event.isRecurring) {
-            const startYear = getYearFromStr(event.startDate);
+        // Treat as recurring if isRecurring flag is set OR if it has a valid frequency
+        const isRecurring = event.isRecurring === true || (event.frequency && event.frequency !== 'one-time') || event.type.startsWith('recurring');
+        
+        if (isRecurring) {
+            const startYear = getYearFromStr(event.startDate || event.date);
             let endYear;
             if (event.endDate && event.endDate !== 'null' && event.endDate !== '') {
                 endYear = getYearFromStr(event.endDate);
@@ -1825,11 +1882,18 @@ function getEventsForYear(year, projectionEndYear) {
                     case 'quarterly': multiplier = 4; break;
                     case 'annually': multiplier = 1; break;
                 }
-                const annualAmount = event.amountType === 'percent' ? event.amount : (event.amount * multiplier);
-                yearEvents.push({ ...event, amount: annualAmount, originalAmount: event.amount });
+                const annualAmount = event.amount * multiplier;
+                // Force isRecurring to true for the engine
+                yearEvents.push({ 
+                    ...event, 
+                    amount: annualAmount, 
+                    originalAmount: event.amount, 
+                    isRecurring: true 
+                });
             }
         } else {
-            if (getYearFromStr(event.date) === year) {
+            const eventYear = getYearFromStr(event.date || event.startDate);
+            if (eventYear === year) {
                 yearEvents.push(event);
             }
         }
@@ -1864,7 +1928,11 @@ function applyEvent(event, balances, yearData) {
 
         case 'expense':
         case 'recurring': // legacy support
-            const expenseAmount = event.amount;
+            let expenseAmount = event.amount;
+            if (event.amountType === 'percent') {
+                const sourceBalance = (event.from && balances[event.from] !== undefined) ? balances[event.from] : Object.values(balances).reduce((a, b) => a + b, 0);
+                expenseAmount = sourceBalance * (event.amount / 100);
+            }
             const expenseFrom = event.from || event.source; // support both
             
             if (expenseFrom && balances[expenseFrom] !== undefined) {
@@ -1885,15 +1953,21 @@ function applyEvent(event, balances, yearData) {
             if (event.isRecurring) {
                 const orig = event.originalAmount || event.amount;
                 const multiplier = event.frequency === 'monthly' ? 12 : event.frequency === 'quarterly' ? 4 : 1;
-                yearData.events.push(`Recurring Expense (${event.frequency}): $${formatNumber(orig)} × ${multiplier} = $${formatNumber(expenseAmount)}`);
+                const displayVal = event.amountType === 'percent' ? `${event.amount}% of balance` : `$${formatNumber(orig)}`;
+                yearData.events.push(`Recurring Expense (${event.frequency}): ${displayVal} × ${multiplier} = $${formatNumber(expenseAmount)}`);
             } else {
-                yearData.events.push(`Expense: $${formatNumber(expenseAmount)}`);
+                const displayVal = event.amountType === 'percent' ? `${event.amount}% ($${formatNumber(expenseAmount)})` : `$${formatNumber(expenseAmount)}`;
+                yearData.events.push(`Expense: ${displayVal}`);
             }
             break;
 
         case 'income':
         case 'recurring-income': // legacy support
-            const incomeAmount = event.amount;
+            let incomeAmount = event.amount;
+            if (event.amountType === 'percent') {
+                const targetBalance = (event.to && balances[event.to] !== undefined) ? balances[event.to] : Object.values(balances).reduce((a, b) => a + b, 0);
+                incomeAmount = targetBalance * (event.amount / 100);
+            }
             yearData.income += incomeAmount;
             yearData.growth += incomeAmount;
             const incomeTo = event.to || event.target; // support both
@@ -1916,9 +1990,11 @@ function applyEvent(event, balances, yearData) {
             if (event.isRecurring) {
                 const orig = event.originalAmount || event.amount;
                 const multiplier = event.frequency === 'monthly' ? 12 : event.frequency === 'quarterly' ? 4 : 1;
-                yearData.events.push(`Recurring Income (${event.frequency}): $${formatNumber(orig)} × ${multiplier} = $${formatNumber(incomeAmount)}`);
+                const displayVal = event.amountType === 'percent' ? `${event.amount}% of balance` : `$${formatNumber(orig)}`;
+                yearData.events.push(`Recurring Income (${event.frequency}): ${displayVal} × ${multiplier} = $${formatNumber(incomeAmount)}`);
             } else {
-                yearData.events.push(`Income: $${formatNumber(incomeAmount)}`);
+                const displayVal = event.amountType === 'percent' ? `${event.amount}% ($${formatNumber(incomeAmount)})` : `$${formatNumber(incomeAmount)}`;
+                yearData.events.push(`Income: ${displayVal}`);
             }
             break;
     }
@@ -2097,8 +2173,10 @@ function saveBaseline() {
     baselineGoals = JSON.parse(JSON.stringify(goals));
     
     // Update UI
-    document.getElementById('scenario-controls').style.display = 'flex';
-    document.getElementById('save-baseline-btn').style.display = 'none';
+    const controls = document.getElementById('scenario-controls');
+    const btn = document.getElementById('save-baseline-btn');
+    if (controls) controls.style.display = 'flex';
+    if (btn) btn.style.display = 'none';
     
     showToast('Baseline saved. Modify your data to see the comparison.', 'success');
     updateNetWorthChart();
@@ -2127,8 +2205,10 @@ function resetToBaseline() {
         baselineEvents = null;
         baselineGoals = null;
         
-        document.getElementById('scenario-controls').style.display = 'none';
-        document.getElementById('save-baseline-btn').style.display = 'inline-flex';
+        const controls = document.getElementById('scenario-controls');
+        const btn = document.getElementById('save-baseline-btn');
+        if (controls) controls.style.display = 'none';
+        if (btn) btn.style.display = 'inline-flex';
         
         updateNetWorthChart();
         saveData();
@@ -2145,8 +2225,10 @@ function clearBaseline() {
     baselineGoals = null;
     
     // Update UI
-    document.getElementById('scenario-controls').style.display = 'none';
-    document.getElementById('save-baseline-btn').style.display = 'inline-flex';
+    const controls = document.getElementById('scenario-controls');
+    const btn = document.getElementById('save-baseline-btn');
+    if (controls) controls.style.display = 'none';
+    if (btn) btn.style.display = 'inline-flex';
     
     showToast('Changes committed as new baseline reference.', 'success');
     updateNetWorthChart();
@@ -2852,12 +2934,12 @@ function handleFileImport(event) {
                 renderInvestments();
                 renderEvents();
                 updateEventFormOptions();
-                alert('Data imported successfully!');
+                showToast('Data imported successfully!', 'success');
             } else {
-                alert('Invalid data format');
+                showToast('Invalid data format', 'error');
             }
         } catch (error) {
-            alert('Error importing data: ' + error.message);
+            showToast('Error importing data: ' + error.message, 'error');
         }
     };
     reader.readAsText(file);
@@ -3107,6 +3189,34 @@ function quickAddEventType(type) {
     showAddEventModal(type);
 }
 
+// Function to toggle theme
+function toggleTheme() {
+    const html = document.documentElement;
+    const mobileToggle = document.getElementById('mobile-theme-toggle');
+    
+    if (html.getAttribute('data-theme') === 'dark') {
+        html.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+        updateToggleContent(mobileToggle, false);
+    } else {
+        html.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        updateToggleContent(mobileToggle, true);
+    }
+    updateChartThemes();
+}
+
+// Helper for theme toggle button content
+function updateToggleContent(toggle, isDark) {
+    if (toggle) {
+        const textSpan = toggle.querySelector('span');
+        if (textSpan) {
+            textSpan.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+        }
+        toggle.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+    }
+}
+
 function setupThemeToggle() {
     const html = document.documentElement;
     const mobileToggle = document.getElementById('mobile-theme-toggle');
@@ -3116,31 +3226,6 @@ function setupThemeToggle() {
     if (!savedTheme) {
         savedTheme = 'dark';
         localStorage.setItem('theme', 'dark');
-    }
-    
-    // Function to update toggle button content
-    function updateToggleContent(toggle, isDark) {
-        if (toggle) {
-            const textSpan = toggle.querySelector('span');
-            if (textSpan) {
-                textSpan.textContent = isDark ? 'Light Mode' : 'Dark Mode';
-            }
-            toggle.setAttribute('aria-pressed', isDark ? 'true' : 'false');
-        }
-    }
-    
-    // Function to toggle theme
-    function toggleTheme() {
-        if (html.getAttribute('data-theme') === 'dark') {
-            html.removeAttribute('data-theme');
-            localStorage.setItem('theme', 'light');
-            updateToggleContent(mobileToggle, false);
-        } else {
-            html.setAttribute('data-theme', 'dark');
-            localStorage.setItem('theme', 'dark');
-            updateToggleContent(mobileToggle, true);
-        }
-        updateChartThemes();
     }
     
     // Set initial state

@@ -32,34 +32,40 @@ The application is a browser-based tool that allows users to input their current
     *   **Rebalancing:** Automated portfolio realignment based on target allocations. (Always recurring).
 *   **FR-3.3: Flexible Amount Logic:**
     *   **Fixed Amount:** Movements based on a static dollar value.
-    *   **Percentage-based:** Movements calculated as a percentage of the source asset's current balance (e.g., for Safe Withdrawal Rates).
+    *   **Percentage-based:** Movements calculated as a percentage of the source/target asset's current balance (supports Safe Withdrawal Rates, percentage-based savings, etc.).
 *   **FR-3.4: Recurring Logic:** Recurring events shall support Monthly, Quarterly, or Annual frequencies and optional end dates.
 *   **FR-3.5: Cash Flow Accounting:** The "Projection Timeline" shall explicitly log each event's impact for auditability.
 
-### 3.4 Goal Tracking
-*   **FR-4.1: Goal Categories:** Support for various goals including Retirement, Home Purchase, Emergency Fund, and Education.
-*   **FR-4.2: Target Types:** Goals can target a specific "Total Net Worth" or a "Specific Asset Balance."
-*   **FR-4.3: Purchase Simulation:** An optional "Deduct on Reach" feature shall simulate a large purchase by withdrawing the goal amount from the target asset once the goal is met.
+### 3.4 What-If Scenarios & Baselines
+*   **FR-4.1: Market Performance Slider:** Real-time adjustment of market returns (bull/bear offsets) across the entire portfolio.
+*   **FR-4.2: Monthly Boost/Expense Slider:** Real-time simulation of additional monthly savings or expenses (supports negative values).
+*   **FR-4.3: Targeted Impact:** Users can select a specific asset as the target for the What-If boost/expense.
+*   **FR-4.4: Baseline Comparison:** Users can "Set Baseline" to save a snapshot of their current plan, then visualize deviations from that baseline as they adjust What-If sliders.
+*   **FR-4.5: Scenario Persistence:** What-If settings are persisted in `localStorage` until explicitly reset.
 
-### 3.5 Visualization & Analysis
-*   **FR-5.1: Interactive Charts:** Provide stacked area charts for Net Worth Projections and Allocation Timelines, and donut charts for current Asset Allocation.
-*   **FR-5.2: Drill-down Details:** Users can click on projection table rows or chart elements to see detailed annual breakdowns of assets, growth, and events.
-*   **FR-5.3: Automated Insights:** A rule-based engine shall provide insights on emergency fund runway, debt leverage, high-interest debt, and portfolio diversification.
-*   **FR-5.4: Milestone Celebrations:** The system shall automatically identify and highlight milestones (e.g., Millionaire Status, Debt Free).
+### 3.5 Goal Tracking
+*   **FR-5.1: Goal Categories:** Support for various goals including Retirement, Home Purchase, Emergency Fund, and Education.
+*   **FR-5.2: Target Types:** Goals can target a specific "Total Net Worth" or a "Specific Asset Balance."
+*   **FR-5.3: Purchase Simulation:** An optional "Deduct on Reach" feature shall simulate a large purchase by withdrawing the goal amount from the target asset once the goal is met.
 
-### 3.6 AI Integration
-*   **FR-6.1: Prompt Generation:** The system shall generate a detailed, context-aware prompt containing the user's full financial state for use with external AI models.
-*   **FR-6.2: One-click Launch:** Provide a direct integration link to open AI analysis tools with the generated prompt.
+### 3.6 Visualization & Analysis
+*   **FR-6.1: Interactive Charts:** Provide stacked area charts for Net Worth Projections and Allocation Timelines, and donut charts for current Asset Allocation.
+*   **FR-6.2: Drill-down Details:** Users can click on projection table rows or chart elements to see detailed annual breakdowns of assets, growth, and events.
+*   **FR-6.3: Automated Insights:** A rule-based engine shall provide insights on emergency fund runway, debt leverage, high-interest debt, and portfolio diversification.
+*   **FR-6.4: Milestone Celebrations:** The system shall automatically identify and highlight milestones (e.g., Millionaire Status, Debt Free, Financial Independence).
 
-### 3.7 Shortcuts & Accessibility
-*   **FR-7.1: Keyboard Shortcuts:** The application shall provide quick shortcuts for power users:
-    *   `Ctrl/Cmd + S`: Manual Save.
+### 3.7 AI Integration
+*   **FR-7.1: Prompt Generation:** The system shall generate a detailed, context-aware prompt containing the user's full financial state for use with external AI models.
+*   **FR-7.2: One-click Launch:** Provide a direct integration link to open AI analysis tools with the generated prompt.
+
+### 3.8 Shortcuts & Accessibility
+*   **FR-8.1: Keyboard Shortcuts:** The application shall provide quick shortcuts for power users:
     *   `Ctrl/Cmd + N`: Add New Investment.
     *   `Ctrl/Cmd + E`: Add New Event.
     *   `Ctrl/Cmd + G`: Add New Goal.
     *   `Escape`: Close any open modal.
-*   **FR-7.2: Visual Feedback:** The system shall provide "Toast" notifications for successful actions (e.g., "Data saved", "Projection updated", "Link copied").
-*   **FR-7.3: Sidebar & Menu:** Desktop users have a fixed sidebar for navigation, while mobile users use a hamburger-toggle menu.
+*   **FR-8.2: Visual Feedback:** The system shall provide "Toast" notifications for successful actions (e.g., "Data saved", "Data imported", "Link copied").
+*   **FR-8.3: Sidebar & Menu:** Desktop users have a fixed sidebar for navigation, while mobile users use a hamburger-toggle menu.
 
 ---
 
@@ -102,5 +108,6 @@ The application is a browser-based tool that allows users to input their current
 ---
 
 ## 6. Quality Assurance
-*   **QA-1.1: Test Suite:** A comprehensive suite of 1000+ qualitative scenarios covering boundary testing, financial personas, and economic stress tests.
+*   **QA-1.1: Test Suite:** A comprehensive suite of 2,600+ qualitative scenarios covering boundary testing, financial personas, and economic stress tests.
 *   **QA-1.2: Accuracy:** Mathematical accuracy verified against standard compound interest and debt amortization formulas.
+*   **QA-1.3: Real-time Validation:** Continuous regression testing of What-If sliders and Baseline comparison logic.

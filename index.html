@@ -276,11 +276,16 @@
                                     </div>
                                     <div class="slider-group">
                                         <div class="slider-info">
-                                            <label>Monthly Savings Boost</label>
+                                            <label>Monthly Boost/Expense</label>
                                             <span id="savings-boost-val">$0</span>
                                         </div>
-                                        <input type="range" id="savings-boost-slider" min="0" max="10000" step="100" value="0" oninput="updateWhatIf()">
+                                        <div class="slider-with-target">
+                                            <input type="range" id="savings-boost-slider" min="-10000" max="10000" step="100" value="0" oninput="updateWhatIf()">
+                                            <select id="savings-boost-target" class="boost-target-select" onchange="updateWhatIf()" title="Target account for this boost/expense">
+                                            </select>
+                                        </div>
                                         <div class="slider-labels">
+                                            <span>-$10k</span>
                                             <span>$0</span>
                                             <span>$10k</span>
                                         </div>
