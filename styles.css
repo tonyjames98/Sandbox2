@@ -1380,6 +1380,13 @@ th { background: var(--bg-main); font-weight: 700; color: var(--text-muted); }
     gap: 1.5rem;
 }
 
+.card-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
 /* Portfolio Insights Styling */
 .insights-grid {
     display: grid;

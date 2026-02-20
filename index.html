@@ -410,8 +410,11 @@
                         <div class="card export-card">
                             <i data-lucide="database"></i>
                             <h3>Raw Data</h3>
-                            <p>Export your investments and events as JSON.</p>
-                            <button class="btn btn-secondary" onclick="exportRawData()">Export JSON</button>
+                            <p>Export or import your entire financial plan as a JSON file.</p>
+                            <div class="card-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="exportRawData()">Export</button>
+                                <button class="btn btn-outline btn-sm" onclick="importData()">Import</button>
+                            </div>
                         </div>
                         <div class="card export-card">
                             <i data-lucide="share-2"></i>

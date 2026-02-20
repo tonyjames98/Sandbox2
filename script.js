@@ -2896,8 +2896,14 @@ function exportData() {
     const data = {
         investments: investments,
         events: events,
+        goals: goals,
         projections: projections,
-        exportedAt: new Date().toISOString()
+        baselineProjections: baselineProjections,
+        baselineInvestments: baselineInvestments,
+        baselineEvents: baselineEvents,
+        baselineGoals: baselineGoals,
+        exportedAt: new Date().toISOString(),
+        version: '1.1'
     };
     
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -2924,15 +2930,34 @@ function handleFileImport(event) {
             if (data.investments && data.events) {
                 investments = data.investments;
                 events = data.events;
+                goals = data.goals || [];
                 projections = data.projections || [];
+                baselineProjections = data.baselineProjections || null;
+                baselineInvestments = data.baselineInvestments || null;
+                baselineEvents = data.baselineEvents || null;
+                baselineGoals = data.baselineGoals || null;
+                
                 saveData();
                 updateDashboard();
                 renderInvestments();
                 renderEvents();
+                renderGoals();
                 updateEventFormOptions();
+                
+                // Show/hide scenario controls based on imported baseline
+                const scenarioControls = document.getElementById('scenario-controls');
+                const saveBtn = document.getElementById('save-baseline-btn');
+                if (baselineProjections) {
+                    if (scenarioControls) scenarioControls.style.display = 'flex';
+                    if (saveBtn) saveBtn.style.display = 'none';
+                } else {
+                    if (scenarioControls) scenarioControls.style.display = 'none';
+                    if (saveBtn) saveBtn.style.display = 'inline-flex';
+                }
+                
                 showToast('Data imported successfully!', 'success');
             } else {
-                showToast('Invalid data format', 'error');
+                showToast('Invalid data format: Missing investments or events', 'error');
             }
         } catch (error) {
             showToast('Error importing data: ' + error.message, 'error');
