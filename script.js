@@ -515,61 +515,42 @@ function switchTab(tabName) {
 
 // Investment Management
 function showAddInvestmentModal(defaultType = 'Stocks') {
-    switchTab('investments');
-    addInvestmentRow();
-}
-
-function editInvestment(id) {
-    switchTab('investments');
-    // Focus the row if possible
-    setTimeout(() => {
-        const rows = document.querySelectorAll('#investments-list tr');
-        rows.forEach(row => {
-            const input = row.querySelector('input');
-            if (input && input.onchange && input.onchange.toString().includes(id)) {
-                input.focus();
-                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        });
-    }, 50);
-}
-
-function showAddEventModal(type = 'expense') {
-    switchTab('events');
-    addEventRow(type);
-}
-
-function editEvent(id) {
-    switchTab('events');
-    setTimeout(() => {
-        const rows = document.querySelectorAll('#events-list tr');
-        rows.forEach(row => {
-            const input = row.querySelector('input');
-            if (input && input.onchange && input.onchange.toString().includes(id)) {
-                input.focus();
-                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        });
-    }, 50);
-}
-
-function showAddGoalModal() {
-    switchTab('goals');
-    addGoalRow();
-}
-
-function editGoal(id) {
-    switchTab('goals');
-    setTimeout(() => {
-        const rows = document.querySelectorAll('#goals-list tr');
-        rows.forEach(row => {
-            const input = row.querySelector('input');
-            if (input && input.onchange && input.onchange.toString().includes(id)) {
-                input.focus();
-                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        });
-    }, 50);
+    const modal = document.getElementById('investment-modal');
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+    
+    // Store the currently focused element
+    const activeElement = document.activeElement;
+    if (activeElement) {
+        activeElement.setAttribute('data-last-focus', 'true');
+    }
+    
+    document.getElementById('investment-form').reset();
+    document.getElementById('investment-amount').value = '10000';
+    
+    // Set the default investment type
+    document.getElementById('investment-type').value = defaultType;
+    
+    // Set initial defaults based on selected type
+    updateInvestmentDefaults();
+    
+    // Update button text to "Add Investment/Debt"
+    const submitBtn = document.querySelector('#investment-form button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.textContent = 'Add Investment/Debt';
+    }
+    
+    // Hide delete button
+    const deleteBtn = document.getElementById('delete-investment-btn');
+    if (deleteBtn) {
+        deleteBtn.style.display = 'none';
+    }
+    
+    // Focus the first input in the modal
+    const firstInput = modal.querySelector('input, select');
+    if (firstInput) {
+        firstInput.focus();
+    }
 }
 
 function generateUniqueInvestmentName(type = 'Stocks') {
@@ -1287,182 +1268,79 @@ function handleEventSubmit(e) {
 
 function renderEvents() {
     const container = document.getElementById('events-list');
-    if (!container) return;
     container.innerHTML = '';
 
     if (events.length === 0) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = '<td colspan="7" class="empty-state" style="padding: 2rem; text-align: center;">No events added yet. Click "Add Row" to get started.</td>';
-        container.appendChild(tr);
+        container.innerHTML = '<p class="empty-state">No events added yet. Add some financial events to see them here.</p>';
         return;
     }
 
     events.forEach(event => {
-        const tr = document.createElement('tr');
+        const item = document.createElement('div');
+        item.className = 'event-item';
         
-        // Multi-select for source/target depending on type
-        let sourceTargetCell = '';
-        const options = investments.map(inv => `<option value="${inv.id}">${inv.name}</option>`).join('');
-        const proportionalOption = '<option value="">Proportional</option>';
-        const externalOption = '<option value="external">External</option>';
-        const cashOption = '<option value="cash">Cash Account</option>';
-
-        if (event.type === 'transfer') {
-            sourceTargetCell = `
-                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                    <select onchange="updateEventField('${event.id}', 'from', this.value)" title="Source">
-                        ${proportionalOption}${options}
-                    </select>
-                    <select onchange="updateEventField('${event.id}', 'to', this.value)" title="Target">
-                        ${proportionalOption}${options}
-                    </select>
-                </div>
-            `;
-        } else if (event.type === 'withdrawal') {
-            sourceTargetCell = `
-                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                    <select onchange="updateEventField('${event.id}', 'from', this.value)" title="Source">
-                        ${proportionalOption}${options}
-                    </select>
-                    <select onchange="updateEventField('${event.id}', 'to', this.value)" title="Destination">
-                        ${externalOption}${cashOption}${options}
-                    </select>
-                </div>
-            `;
-        } else if (event.type === 'income') {
-            sourceTargetCell = `
-                <select onchange="updateEventField('${event.id}', 'to', this.value)" title="Target Account">
-                    ${proportionalOption}${options}
-                </select>
-            `;
-        } else if (event.type === 'expense') {
-            sourceTargetCell = `
-                <select onchange="updateEventField('${event.id}', 'from', this.value)" title="Source Account">
-                    ${proportionalOption}${options}
-                </select>
-            `;
-        } else {
-            sourceTargetCell = '<span style="opacity: 0.5">N/A</span>';
-        }
-
+        let title, details, icon, typeClass;
         const isRec = !!event.isRecurring;
-        const dateValue = isRec ? (event.startDate || '') : (event.date || '');
+        const freqLabel = isRec ? ` (${event.frequency})` : '';
 
-        tr.innerHTML = `
-            <td>
-                <select onchange="updateEventField('${event.id}', 'type', this.value)">
-                    <option value="income" ${event.type === 'income' ? 'selected' : ''}>Income</option>
-                    <option value="expense" ${event.type === 'expense' ? 'selected' : ''}>Expense</option>
-                    <option value="transfer" ${event.type === 'transfer' ? 'selected' : ''}>Transfer</option>
-                    <option value="withdrawal" ${event.type === 'withdrawal' ? 'selected' : ''}>Withdrawal</option>
-                    <option value="rebalancing" ${event.type === 'rebalancing' ? 'selected' : ''}>Rebalancing</option>
-                </select>
-            </td>
-            <td><input type="text" value="${event.description || ''}" onchange="updateEventField('${event.id}', 'description', this.value)" placeholder="Description"></td>
-            <td>
-                <div style="display: flex; gap: 0.25rem;">
-                    <input type="number" style="flex: 1;" value="${event.amount || 0}" onchange="updateEventField('${event.id}', 'amount', this.value)">
-                    <select style="width: 60px;" onchange="updateEventField('${event.id}', 'amountType', this.value)">
-                        <option value="fixed" ${event.amountType === 'fixed' ? 'selected' : ''}>$</option>
-                        <option value="percent" ${event.amountType === 'percent' ? 'selected' : ''}>%</option>
-                    </select>
-                </div>
-            </td>
-            <td>
-                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                    <label style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.7rem; cursor: pointer;">
-                        <input type="checkbox" style="width: auto;" ${isRec ? 'checked' : ''} onchange="updateEventField('${event.id}', 'isRecurring', this.checked)"> Recurring
-                    </label>
-                    <select ${!isRec ? 'disabled style="opacity: 0.3"' : ''} onchange="updateEventField('${event.id}', 'frequency', this.value)">
-                        <option value="monthly" ${event.frequency === 'monthly' ? 'selected' : ''}>Monthly</option>
-                        <option value="quarterly" ${event.frequency === 'quarterly' ? 'selected' : ''}>Quarterly</option>
-                        <option value="annually" ${event.frequency === 'annually' ? 'selected' : ''}>Annually</option>
-                    </select>
-                </div>
-            </td>
-            <td>${sourceTargetCell}</td>
-            <td>
-                <input type="date" value="${dateValue}" onchange="updateEventField('${event.id}', isRec ? 'startDate' : 'date', this.value)">
-            </td>
-            <td>
-                <div style="display: flex; gap: 0.5rem; justify-content: center;">
-                    <button class="btn-icon" onclick="deleteEvent('${event.id}')" title="Delete Row">
-                        <i data-lucide="trash-2"></i>
-                    </button>
-                </div>
-            </td>
+        switch (event.type) {
+            case 'rebalancing':
+                title = `Rebalancing${freqLabel}`;
+                details = `Portfolio will be rebalanced ${event.frequency || 'annually'}`;
+                icon = 'refresh-cw';
+                typeClass = 'rebalancing';
+                break;
+            case 'transfer':
+                const fromInv = investments.find(inv => inv.id === event.from);
+                const toInv = investments.find(inv => inv.id === event.to);
+                const transferValue = event.amountType === 'percent' ? `${event.amount}%` : `$${formatNumber(event.amount)}`;
+                title = `Transfer: ${transferValue}${freqLabel}`;
+                details = `From ${fromInv?.name || 'Proportional'} to ${toInv?.name || 'Proportional'} on ${isRec ? formatDate(event.startDate) : formatDate(event.date)}`;
+                icon = 'repeat';
+                typeClass = 'transfer';
+                break;
+            case 'withdrawal':
+                const withdrawFrom = investments.find(inv => inv.id === event.from);
+                const withdrawalValue = event.amountType === 'percent' ? `${event.amount}%` : `$${formatNumber(event.amount)}`;
+                const isExternal = event.to === 'external';
+                title = `Withdrawal: ${withdrawalValue}${freqLabel}`;
+                details = `From ${withdrawFrom?.name || 'General Assets'} to ${isExternal ? 'External' : 'Cash Account'} on ${isRec ? formatDate(event.startDate) : formatDate(event.date)}`;
+                icon = isExternal ? 'external-link' : 'wallet';
+                typeClass = 'withdrawal';
+                break;
+            case 'expense':
+                const sourceInv = event.from ? investments.find(inv => inv.id === event.from) : null;
+                title = `${isRec ? 'Recurring ' : ''}Expense: ${event.description || 'Untitled'}`;
+                details = `$${formatNumber(event.amount)} ${isRec ? event.frequency : 'on ' + formatDate(event.date)}${sourceInv ? ` from ${sourceInv.name}` : ''}`;
+                icon = 'trending-down';
+                typeClass = 'expense';
+                break;
+            case 'income':
+                const incomeTarget = event.to ? investments.find(inv => inv.id === event.to) : null;
+                title = `${isRec ? 'Recurring ' : ''}Income: ${event.description || 'Untitled'}`;
+                details = `$${formatNumber(event.amount)} ${isRec ? event.frequency : 'on ' + formatDate(event.date)}${incomeTarget ? ` to ${incomeTarget.name}` : ''}`;
+                icon = 'trending-up';
+                typeClass = 'income';
+                break;
+        }
+
+        item.innerHTML = `
+            <div class="event-type-icon ${typeClass}">
+                <i data-lucide="${icon}"></i>
+            </div>
+            <div class="event-content">
+                <div class="event-title">${title}</div>
+                <div class="event-details">${details}</div>
+            </div>
+            <div class="event-actions">
+                <button class="btn btn-outline btn-sm" onclick="editEvent('${event.id}')"><i data-lucide="edit-2"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="deleteEvent('${event.id}')"><i data-lucide="trash-2"></i></button>
+            </div>
         `;
-        
-        // Set values for selects that were just added
-        const selects = tr.querySelectorAll('select');
-        if (event.type === 'transfer' || event.type === 'withdrawal' || event.type === 'expense') {
-            const fromSelect = Array.from(selects).find(s => s.title.includes('Source'));
-            if (fromSelect) fromSelect.value = event.from || '';
-        }
-        if (event.type === 'transfer' || event.type === 'withdrawal' || event.type === 'income') {
-            const toSelect = Array.from(selects).find(s => s.title.includes('Target') || s.title.includes('Destination'));
-            if (toSelect) toSelect.value = event.to || '';
-        }
-
-        container.appendChild(tr);
+        container.appendChild(item);
     });
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
-}
-
-function updateEventField(id, field, value) {
-    const event = events.find(e => e.id === id);
-    if (!event) return;
-
-    if (field === 'amount') {
-        event[field] = parseFloat(value) || 0;
-    } else if (field === 'isRecurring') {
-        event[field] = !!value;
-        if (value && !event.frequency) event.frequency = 'monthly';
-        renderEvents(); // Re-render to enable/disable frequency
-    } else {
-        event[field] = value;
-    }
-
-    saveData();
-    updateDashboard();
-    
-    if (field === 'type') {
-        renderEvents(); // Re-render to change source/target selectors
-    }
-    
-    if (document.getElementById('dashboard').classList.contains('active')) {
-        runProjection();
-    }
-}
-
-function addEventRow(type = 'expense') {
-    const today = new Date().toISOString().split('T')[0];
-    const newEvent = {
-        id: Date.now().toString(),
-        type: type,
-        description: '',
-        amount: 0,
-        amountType: 'fixed',
-        isRecurring: false,
-        frequency: 'monthly',
-        date: today,
-        startDate: today,
-        createdAt: new Date().toISOString()
-    };
-    events.push(newEvent);
-    saveData();
-    renderEvents();
-    updateDashboard();
-    
-    setTimeout(() => {
-        const rows = document.querySelectorAll('#events-list tr');
-        const lastRow = rows[rows.length - 1];
-        if (lastRow) {
-            const descInput = lastRow.querySelector('input[placeholder="Description"]');
-            if (descInput) descInput.focus();
-        }
-    }, 50);
 }
 
 function deleteEvent(id) {
@@ -1479,129 +1357,123 @@ function deleteEvent(id) {
 }
 
 // Goal Management
-function renderGoals() {
-    const container = document.getElementById('goals-list');
-    if (!container) return;
-    container.innerHTML = '';
+function handleGoalCategoryChange() {
+    const category = document.getElementById('goal-category').value;
+    const nameInput = document.getElementById('goal-name');
+    const typeSelect = document.getElementById('goal-type');
+    
+    const defaults = {
+        'retirement': { name: 'Retirement', type: 'net-worth' },
+        'emergency-fund': { name: 'Emergency Fund', type: 'investment' },
+        'home': { name: 'House Down Payment', type: 'net-worth' },
+        'car': { name: 'New Car', type: 'net-worth' },
+        'education': { name: 'College Fund', type: 'net-worth' },
+        'vacation': { name: 'Dream Vacation', type: 'net-worth' },
+        'investment': { name: 'Portfolio Milestone', type: 'investment' },
+        'other': { name: '', type: 'net-worth' }
+    };
+    
+    if (defaults[category]) {
+        nameInput.value = defaults[category].name;
+        typeSelect.value = defaults[category].type;
+        // Trigger type change logic
+        const isInvestment = typeSelect.value === 'investment';
+        document.getElementById('goal-target-asset-group').style.display = isInvestment ? 'block' : 'none';
+        document.getElementById('goal-deduct-group').style.display = isInvestment ? 'block' : 'none';
+    }
+}
 
-    if (goals.length === 0) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = '<td colspan="7" class="empty-state" style="padding: 2rem; text-align: center;">No goals set. Click "Add Goal" to get started.</td>';
-        container.appendChild(tr);
+function showAddGoalModal() {
+    const modal = document.getElementById('goal-modal');
+    modal.style.display = 'flex';
+    document.getElementById('goal-form').reset();
+    document.getElementById('goal-form').removeAttribute('data-edit-id');
+    document.getElementById('goal-modal-title').textContent = 'Add Financial Goal';
+    
+    // Default year to 10 years from now
+    document.getElementById('goal-year').value = new Date().getFullYear() + 10;
+    
+    // Update asset options
+    const assetSelect = document.getElementById('goal-target-asset');
+    assetSelect.innerHTML = investments.map(inv => `<option value="${inv.id}">${inv.name}</option>`).join('');
+    
+    // Handle goal type change
+    document.getElementById('goal-type').onchange = function() {
+        const isInvestment = this.value === 'investment';
+        document.getElementById('goal-target-asset-group').style.display = isInvestment ? 'block' : 'none';
+        document.getElementById('goal-deduct-group').style.display = isInvestment ? 'block' : 'none';
+    };
+    
+    // Set initial defaults
+    handleGoalCategoryChange();
+
+    // Update button text
+    const submitBtn = modal.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.textContent = 'Save Goal';
+}
+
+function handleGoalSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const editId = form.getAttribute('data-edit-id');
+    
+    const goal = {
+        id: editId || Date.now().toString(),
+        category: document.getElementById('goal-category').value,
+        name: document.getElementById('goal-name').value,
+        amount: parseFloat(document.getElementById('goal-amount').value),
+        year: parseInt(document.getElementById('goal-year').value),
+        type: document.getElementById('goal-type').value,
+        targetAssetId: document.getElementById('goal-type').value === 'investment' ? document.getElementById('goal-target-asset').value : null,
+        deductOnComplete: document.getElementById('goal-type').value === 'investment' ? document.getElementById('goal-deduct').checked : false,
+        createdAt: editId ? goals.find(g => g.id === editId).createdAt : new Date().toISOString()
+    };
+
+    if (!goal.name || isNaN(goal.amount) || isNaN(goal.year)) {
+        showToast('Please fill in all required fields.', 'error');
         return;
     }
 
-    // Sort goals by year for logical table view
-    const sortedGoals = [...goals].sort((a, b) => a.year - b.year);
-
-    sortedGoals.forEach(goal => {
-        const tr = document.createElement('tr');
-        const options = investments.map(inv => `<option value="${inv.id}">${inv.name}</option>`).join('');
-
-        tr.innerHTML = `
-            <td>
-                <select onchange="updateGoalField('${goal.id}', 'category', this.value)">
-                    <option value="retirement" ${goal.category === 'retirement' ? 'selected' : ''}>Retirement</option>
-                    <option value="emergency-fund" ${goal.category === 'emergency-fund' ? 'selected' : ''}>Emergency Fund</option>
-                    <option value="home" ${goal.category === 'home' ? 'selected' : ''}>Home</option>
-                    <option value="car" ${goal.category === 'car' ? 'selected' : ''}>Car</option>
-                    <option value="education" ${goal.category === 'education' ? 'selected' : ''}>Education</option>
-                    <option value="vacation" ${goal.category === 'vacation' ? 'selected' : ''}>Vacation</option>
-                    <option value="investment" ${goal.category === 'investment' ? 'selected' : ''}>Investment</option>
-                    <option value="other" ${goal.category === 'other' ? 'selected' : ''}>Other</option>
-                </select>
-            </td>
-            <td><input type="text" value="${goal.name}" onchange="updateGoalField('${goal.id}', 'name', this.value)" placeholder="Goal Name"></td>
-            <td><input type="number" class="amount-input" value="${goal.amount}" onchange="updateGoalField('${goal.id}', 'amount', this.value)"></td>
-            <td><input type="number" value="${goal.year}" onchange="updateGoalField('${goal.id}', 'year', this.value)"></td>
-            <td>
-                <select onchange="updateGoalField('${goal.id}', 'type', this.value)">
-                    <option value="net-worth" ${goal.type === 'net-worth' ? 'selected' : ''}>Total Net Worth</option>
-                    <option value="investment" ${goal.type === 'investment' ? 'selected' : ''}>Specific Asset</option>
-                </select>
-                ${goal.type === 'investment' ? `
-                    <select style="margin-top: 0.25rem;" onchange="updateGoalField('${goal.id}', 'targetAssetId', this.value)">
-                        <option value="">Select Asset...</option>
-                        ${options}
-                    </select>
-                ` : ''}
-            </td>
-            <td>
-                <label style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.7rem; cursor: pointer;">
-                    <input type="checkbox" style="width: auto;" ${goal.deductOnComplete ? 'checked' : ''} onchange="updateGoalField('${goal.id}', 'deductOnComplete', this.checked)"> Deduct on reach
-                </label>
-            </td>
-            <td>
-                <div style="display: flex; gap: 0.5rem; justify-content: center;">
-                    <button class="btn-icon" onclick="deleteGoal('${goal.id}')" title="Delete Goal">
-                        <i data-lucide="trash-2"></i>
-                    </button>
-                </div>
-            </td>
-        `;
-
-        if (goal.type === 'investment' && goal.targetAssetId) {
-            const selects = tr.querySelectorAll('select');
-            const targetSelect = selects[selects.length - 1];
-            if (targetSelect) targetSelect.value = goal.targetAssetId;
-        }
-
-        container.appendChild(tr);
-    });
-
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+    if (goal.year < new Date().getFullYear() || goal.year > 2100) {
+        showToast('Please enter a valid future year.', 'error');
+        return;
+    }
+    
+    if (editId) {
+        const idx = goals.findIndex(g => g.id === editId);
+        if (idx !== -1) goals[idx] = goal;
+    } else {
+        goals.push(goal);
+    }
+    
+    saveData();
+    closeModal('goal-modal');
+    renderGoals();
+    updateNetWorthChart(); // Refresh chart to show markers
 }
 
-function updateGoalField(id, field, value) {
+function editGoal(id) {
     const goal = goals.find(g => g.id === id);
     if (!goal) return;
-
-    if (field === 'amount' || field === 'year') {
-        goal[field] = parseInt(value) || 0;
-    } else if (field === 'deductOnComplete') {
-        goal[field] = !!value;
-    } else {
-        goal[field] = value;
-    }
-
-    saveData();
-    updateDashboard();
     
-    if (field === 'type') {
-        renderGoals(); // Re-render to show/hide target asset selector
+    showAddGoalModal();
+    document.getElementById('goal-modal-title').textContent = 'Edit Financial Goal';
+    document.getElementById('goal-form').setAttribute('data-edit-id', id);
+    
+    document.getElementById('goal-category').value = goal.category || 'other';
+    document.getElementById('goal-name').value = goal.name;
+    document.getElementById('goal-amount').value = goal.amount;
+    document.getElementById('goal-year').value = goal.year;
+    document.getElementById('goal-type').value = goal.type;
+    
+    if (goal.type === 'investment') {
+        document.getElementById('goal-target-asset-group').style.display = 'block';
+        document.getElementById('goal-target-asset').value = goal.targetAssetId;
+        document.getElementById('goal-deduct-group').style.display = 'block';
+        document.getElementById('goal-deduct').checked = goal.deductOnComplete || false;
     }
     
-    if (document.getElementById('dashboard').classList.contains('active')) {
-        runProjection();
-    }
-}
-
-function addGoalRow() {
-    const nextYear = new Date().getFullYear() + 5;
-    const newGoal = {
-        id: Date.now().toString(),
-        category: 'other',
-        name: '',
-        amount: 10000,
-        year: nextYear,
-        type: 'net-worth',
-        targetAssetId: '',
-        deductOnComplete: false,
-        createdAt: new Date().toISOString()
-    };
-    goals.push(newGoal);
-    saveData();
-    renderGoals();
-    updateDashboard();
-    
-    setTimeout(() => {
-        const rows = document.querySelectorAll('#goals-list tr');
-        const lastRow = rows[rows.length - 1];
-        if (lastRow) {
-            const nameInput = lastRow.querySelector('input[placeholder="Goal Name"]');
-            if (nameInput) nameInput.focus();
-        }
-    }, 50);
+    document.querySelector('#goal-modal button[type="submit"]').textContent = 'Update Goal';
 }
 
 function deleteGoal(id) {
@@ -1609,12 +1481,106 @@ function deleteGoal(id) {
         goals = goals.filter(g => g.id !== id);
         saveData();
         renderGoals();
-        updateDashboard();
-        
-        if (document.getElementById('dashboard').classList.contains('active')) {
-            runProjection();
-        }
+        updateNetWorthChart();
     }
+}
+
+function renderGoals() {
+    const container = document.getElementById('goals-list');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (goals.length === 0) {
+        container.innerHTML = '<p class="empty-state">No financial goals set yet. Add a goal to track your progress!</p>';
+        return;
+    }
+    
+    // Category icons map
+    const categoryIcons = {
+        'retirement': 'palmtree',
+        'emergency-fund': 'shield',
+        'home': 'home',
+        'car': 'car',
+        'education': 'graduation-cap',
+        'vacation': 'plane',
+        'investment': 'trending-up',
+        'other': 'target'
+    };
+    
+    // Sort goals by year
+    const sortedGoals = [...goals].sort((a, b) => a.year - b.year);
+    
+    sortedGoals.forEach(goal => {
+        // Calculate progress
+        let currentVal = 0;
+        const targetYear = goal.year;
+        const projection = projections.find(p => p.year === targetYear);
+        
+        if (projection) {
+            if (goal.type === 'net-worth') {
+                currentVal = projection.totalNetWorth;
+            } else {
+                currentVal = projection.balances[goal.targetAssetId] || 0;
+            }
+        } else {
+            // If beyond projection, use the last year's value as a proxy
+            const lastYear = projections[projections.length - 1];
+            if (lastYear) {
+                if (goal.type === 'net-worth') {
+                    currentVal = lastYear.totalNetWorth;
+                } else {
+                    currentVal = lastYear.balances[goal.targetAssetId] || 0;
+                }
+            }
+        }
+        
+        const progress = Math.min(100, Math.max(0, (currentVal / goal.amount) * 100));
+        const isOnTrack = currentVal >= goal.amount;
+        const icon = categoryIcons[goal.category] || 'target';
+        
+        const card = document.createElement('div');
+        card.className = 'goal-card';
+        card.innerHTML = `
+            <div class="goal-header">
+                <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                    <div class="goal-icon" style="background: rgba(99, 102, 241, 0.1); color: var(--border-focus); padding: 0.75rem; border-radius: var(--radius-md); display: flex;">
+                        <i data-lucide="${icon}"></i>
+                    </div>
+                    <div class="goal-info">
+                        <h3>${goal.name}</h3>
+                        <div class="goal-target">Target: $${formatNumber(goal.amount)} in ${goal.year}</div>
+                        ${goal.deductOnComplete ? `<div class="goal-target" style="color: var(--warning-color); font-size: 0.8rem; display: flex; align-items: center; gap: 0.25rem; margin-top: 0.25rem;"><i data-lucide="minus-circle" style="width: 14px; height: 14px;"></i> Deducts from balance on reach</div>` : ''}
+                    </div>
+                </div>
+                <span class="goal-status-badge ${isOnTrack ? 'on-track' : 'off-track'}">
+                    ${isOnTrack ? 'On Track' : 'Needs More'}
+                </span>
+            </div>
+            
+            <div class="goal-progress-container">
+                <div class="goal-progress-labels">
+                    <span>${progress.toFixed(1)}% of goal</span>
+                    <span>$${formatNumber(currentVal)} / $${formatNumber(goal.amount)}</span>
+                </div>
+                <div class="goal-progress-bar">
+                    <div class="goal-progress-fill" style="width: ${progress}%"></div>
+                </div>
+            </div>
+            
+            <div class="goal-actions">
+                <button class="btn btn-outline btn-sm" onclick="editGoal('${goal.id}')">
+                    <i data-lucide="edit-2"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteGoal('${goal.id}')">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+    
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 // Projection Engine
