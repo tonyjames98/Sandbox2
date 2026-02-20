@@ -31,7 +31,6 @@ document.addEventListener('DOMContentLoaded', function() {
     renderEvents();
     renderGoals();
     setupCharts();
-    setupThemeToggle();
     
     // Display portfolio insights
     displayPortfolioInsights();
@@ -408,9 +407,6 @@ function setupEventListeners() {
 
     // File import
     document.getElementById('import-file').addEventListener('change', handleFileImport);
-
-    // Theme toggle
-    setupThemeToggle();
 
     // Window Resize Handling
     let resizeTimeout;
@@ -2099,7 +2095,7 @@ function updateAllocationChart() {
 
     ctx.style.display = 'block';
     const colors = generateInvestmentColors(validInvestments.length);
-    const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+    const isDarkMode = true;
 
     charts.allocation = new Chart(ctx, {
         type: 'doughnut',
@@ -2243,7 +2239,7 @@ function updateNetWorthChart() {
         charts.netWorth.destroy();
     }
 
-    const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+    const isDarkMode = true;
     let datasets = [];
 
     // Pre-calculate colors based on original investments order to keep them consistent
@@ -2548,7 +2544,7 @@ function updateAllocationTimelineChart() {
         borderRadius: 4
     }));
 
-    const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+    const isDarkMode = true;
     
     charts.allocationTimeline = new Chart(ctx, {
         type: 'bar',
@@ -3189,60 +3185,6 @@ function quickAddEventType(type) {
     showAddEventModal(type);
 }
 
-// Function to toggle theme
-function toggleTheme() {
-    const html = document.documentElement;
-    const mobileToggle = document.getElementById('mobile-theme-toggle');
-    
-    if (html.getAttribute('data-theme') === 'dark') {
-        html.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'light');
-        updateToggleContent(mobileToggle, false);
-    } else {
-        html.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
-        updateToggleContent(mobileToggle, true);
-    }
-    updateChartThemes();
-}
-
-// Helper for theme toggle button content
-function updateToggleContent(toggle, isDark) {
-    if (toggle) {
-        const textSpan = toggle.querySelector('span');
-        if (textSpan) {
-            textSpan.textContent = isDark ? 'Light Mode' : 'Dark Mode';
-        }
-        toggle.setAttribute('aria-pressed', isDark ? 'true' : 'false');
-    }
-}
-
-function setupThemeToggle() {
-    const html = document.documentElement;
-    const mobileToggle = document.getElementById('mobile-theme-toggle');
-    
-    // Always default to dark if no theme is set
-    let savedTheme = localStorage.getItem('theme');
-    if (!savedTheme) {
-        savedTheme = 'dark';
-        localStorage.setItem('theme', 'dark');
-    }
-    
-    // Set initial state
-    if (savedTheme === 'light') {
-        html.removeAttribute('data-theme');
-        updateToggleContent(mobileToggle, false);
-    } else {
-        html.setAttribute('data-theme', 'dark');
-        updateToggleContent(mobileToggle, true);
-    }
-    
-    // Add event listener
-    if (mobileToggle) {
-        mobileToggle.onclick = toggleTheme;
-    }
-}
-
 function autoRunProjection() {
     // Get the default projection years from the input or use 30
     const projectionYearsInput = document.getElementById('projection-years-input');
@@ -3252,19 +3194,6 @@ function autoRunProjection() {
     updateProjectionCharts();
     updateProjectionTable();
     updateProjectedNetWorth();
-}
-
-function updateChartThemes() {
-    // Update existing charts with new theme colors
-    if (charts.allocation) {
-        updateAllocationChart();
-    }
-    if (charts.netWorth) {
-        updateNetWorthChart();
-    }
-    if (charts.allocationTimeline) {
-        updateAllocationTimelineChart();
-    }
 }
 
 // Performance optimization: Debounce function
