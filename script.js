@@ -1,3 +1,31 @@
+function handleValueTypeChange(prefix) {
+    const typeSelect = document.getElementById(prefix === 'unified' ? 'event-amount-type' : `${prefix}-type`);
+    const amountInput = document.getElementById(prefix === 'unified' ? 'event-amount' : `${prefix}-amount`);
+    const wrapper = document.getElementById('event-amount-wrapper');
+    
+    if (!typeSelect || !amountInput) return;
+
+    const isRecurring = document.getElementById('event-is-recurring')?.checked;
+
+    // Update value defaults
+    if (typeSelect.value === 'percent') {
+        amountInput.value = '4';
+    } else {
+        amountInput.value = isRecurring ? '500' : '1000';
+    }
+
+    // Update UI symbols
+    if (wrapper) {
+        if (typeSelect.value === 'fixed') {
+            wrapper.classList.add('currency');
+            wrapper.classList.remove('percent');
+        } else {
+            wrapper.classList.add('percent');
+            wrapper.classList.remove('currency');
+        }
+    }
+}
+
 // Global variables
 let investments = [];
 let events = [];
@@ -14,79 +42,84 @@ let projectionTimeout = null; // For debouncing projections
 let chartUpdateTimeout = null; // For debouncing chart updates
 
 // Initialize the application
-document.addEventListener('DOMContentLoaded', function() {
-    // Check for shared data first
-    const hasSharedData = loadSharedData();
-    
-    // Load local data if no shared data was found
-    if (!hasSharedData) {
-        loadData();
-    }
-    
-    setupEventListeners();
-    setupKeyboardShortcuts(); // Add keyboard shortcuts
-    setupMobileFeatures(); // Add mobile-specific features
-    updateDashboard();
-    renderInvestments();
-    renderEvents();
-    renderGoals();
-    setupCharts();
-    
-    // Display portfolio insights
-    displayPortfolioInsights();
-    
-    // Restore projection charts and table if projections exist
-    if (projections && projections.length > 0) {
-        updateProjectionCharts();
-        updateProjectionTable();
-    }
-    
-    // Auto-run projection on initial load (only if no shared data was loaded and they've run it before)
-    if (!hasSharedData && localStorage.getItem('hasRunProjection')) {
-        setTimeout(() => {
-            runProjection();
-        }, 100); // Small delay to ensure everything is loaded
-    }
+// App initialization moved to global initApp function for better testability
 
-    // Contact Us link and modal
-    const contactLink = document.getElementById('contact-us-link');
-    if (contactLink) {
-        contactLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('contact-modal').style.display = 'flex';
-        });
-    }
-    
-    // Privacy Policy link and modal
-    const privacyLink = document.getElementById('privacy-policy-link');
-    if (privacyLink) {
-        privacyLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('privacy-policy-modal').style.display = 'flex';
-        });
-    }
-    
-    // Disclaimer link and modal
-    const disclaimerLink = document.getElementById('disclaimer-link');
-    if (disclaimerLink) {
-        disclaimerLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('disclaimer-modal').style.display = 'flex';
-        });
-    }
-    
-    // Initialize AI analysis manual prompt
-    updateManualPrompt();
-    
-    // Show welcome message for new users
-    if (!localStorage.getItem('hasVisited')) {
-        showToast('Add some assets/debt/events and click run projection to get started', 'info', 6000);
-        localStorage.setItem('hasVisited', 'true');
-    }
+// Global Tooltips Implementation
+function initTooltips() {
+    const tooltip = document.getElementById('global-tooltip');
+    if (!tooltip) return;
 
-    // Initialize onboarding guide
-    updateOnboardingGuide();
-});
+    // Prevent duplicate initialization
+    if (document.body.hasAttribute('data-tooltips-init')) return;
+    document.body.setAttribute('data-tooltips-init', 'true');
+
+    let currentTarget = null;
+    let updatePositionRef = null;
+
+    // Event listener for tooltip triggers
+    const handleMouseOver = (e) => {
+        const target = e.target.closest('[data-tooltip]');
+        
+        // If we moved into a NEW tooltip container
+        if (target && target !== currentTarget) {
+            currentTarget = target;
+            const text = target.getAttribute('data-tooltip');
+            if (!text) return;
+
+            tooltip.textContent = text;
+            
+            if (updatePositionRef) {
+                window.removeEventListener('scroll', updatePositionRef);
+                window.removeEventListener('resize', updatePositionRef);
+            }
+
+            updatePositionRef = () => {
+                if (!currentTarget) return;
+                const rect = currentTarget.getBoundingClientRect();
+                tooltip.style.left = `${rect.left + rect.width / 2}px`;
+                tooltip.style.top = `${rect.top}px`;
+            };
+
+            updatePositionRef();
+            tooltip.classList.add('active');
+            
+            window.addEventListener('scroll', updatePositionRef, { passive: true });
+            window.addEventListener('resize', updatePositionRef, { passive: true });
+        }
+    };
+
+    const handleMouseOut = (e) => {
+        const target = e.target.closest('[data-tooltip]');
+        const relatedTarget = e.relatedTarget ? (e.relatedTarget instanceof Element ? e.relatedTarget.closest('[data-tooltip]') : null) : null;
+        
+        if (target && target !== relatedTarget) {
+            tooltip.classList.remove('active');
+            
+            if (updatePositionRef) {
+                window.removeEventListener('scroll', updatePositionRef);
+                window.removeEventListener('resize', updatePositionRef);
+                updatePositionRef = null;
+            }
+            currentTarget = null;
+        }
+    };
+
+    document.body.addEventListener('mouseover', handleMouseOver, true);
+    document.body.addEventListener('mouseout', handleMouseOut, true);
+
+    // Close on click or Escape key
+    document.body.addEventListener('mousedown', () => {
+        tooltip.classList.remove('active');
+        currentTarget = null;
+    });
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            tooltip.classList.remove('active');
+            currentTarget = null;
+        }
+    });
+}
 
 // Onboarding Guide Logic
 function updateOnboardingGuide() {
@@ -107,6 +140,86 @@ function updateOnboardingGuide() {
     } else {
         if (sampleContainer) sampleContainer.style.display = 'none';
     }
+}
+
+// Global initialization function
+function initApp() {
+    // Check for shared data first
+    const hasSharedData = loadSharedData();
+    
+    // Load local data if no shared data was found
+    if (!hasSharedData) {
+        loadData();
+    }
+    
+    setupEventListeners();
+    setupKeyboardShortcuts(); 
+    setupMobileFeatures(); 
+    updateDashboard();
+    renderInvestments();
+    renderEvents();
+    renderGoals();
+    setupCharts();
+    initTooltips(); // Ensure tooltips are initialized
+    
+    displayPortfolioInsights();
+    
+    if (projections && projections.length > 0) {
+        updateProjectionCharts();
+        updateProjectionTable();
+    }
+    
+    if (!hasSharedData && localStorage.getItem('hasRunProjection')) {
+        setTimeout(() => {
+            runProjection();
+        }, 100);
+    }
+
+    // Initialize AI analysis manual prompt
+    if (typeof updateManualPrompt === 'function') updateManualPrompt();
+    
+    // Show welcome message for new users
+    if (!localStorage.getItem('hasVisited')) {
+        showToast('Add some assets/debt/events and click run projection to get started', 'info', 6000);
+        localStorage.setItem('hasVisited', 'true');
+    }
+
+    // Initialize onboarding guide
+    if (typeof updateOnboardingGuide === 'function') updateOnboardingGuide();
+    
+    // Set initial event amount wrapper class
+    if (typeof handleValueTypeChange === 'function') handleValueTypeChange('unified');
+
+    const contactLink = document.getElementById('contact-us-link');
+    if (contactLink) {
+        contactLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('contact-modal').style.display = 'flex';
+        });
+    }
+    
+    const privacyLink = document.getElementById('privacy-policy-link');
+    if (privacyLink) {
+        privacyLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('privacy-policy-modal').style.display = 'flex';
+        });
+    }
+    
+    const disclaimerLink = document.getElementById('disclaimer-link');
+    if (disclaimerLink) {
+        disclaimerLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('disclaimer-modal').style.display = 'flex';
+        });
+    }
+}
+
+// Initialize the application
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
 }
 
 function loadSampleScenario() {
@@ -234,20 +347,226 @@ function setupKeyboardShortcuts() {
 }
 
 function showAutoSaveIndicator() {
-    const indicator = document.createElement('div');
-    indicator.id = 'auto-save-indicator';
-    indicator.className = 'auto-save-indicator';
-    indicator.textContent = 'Saving...';
-    document.body.appendChild(indicator);
+    showToast('All changes autosaved', 'success', 2000);
+}
+
+// Advanced Simulations: Monte Carlo
+function boxMullerTransform() {
+    const u = 1 - Math.random(); 
+    const v = 1 - Math.random();
+    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+}
+
+function runMonteCarlo() {
+    const iterations = parseInt(document.getElementById('mc-iterations').value);
+    const volatility = parseFloat(document.getElementById('mc-volatility').value) / 100;
+    const years = parseInt(document.getElementById('projection-years-input').value);
     
+    if (investments.length === 0) {
+        showToast('Add at least one asset to run simulations.', 'error');
+        return;
+    }
+
+    const runBtn = document.querySelector('.mc-settings .btn-primary');
+    const originalBtnText = runBtn.innerHTML;
+    runBtn.disabled = true;
+    runBtn.innerHTML = '<i data-lucide="refresh-cw" class="spin"></i> <span>Simulating...</span>';
+    lucide.createIcons();
+
+    // Small delay to let UI update
     setTimeout(() => {
-        indicator.textContent = 'Saved!';
-        setTimeout(() => {
-            if (indicator.parentNode) {
-                indicator.parentNode.removeChild(indicator);
+        const allSimulations = [];
+        
+        for (let i = 0; i < iterations; i++) {
+            const simResult = calculateSingleSimulation(years, volatility);
+            allSimulations.push(simResult);
+        }
+
+        const results = processMonteCarloResults(allSimulations);
+        displayMonteCarloResults(results);
+        
+        runBtn.disabled = false;
+        runBtn.innerHTML = originalBtnText;
+        lucide.createIcons();
+        
+        document.getElementById('mc-results').style.display = 'block';
+        showToast(`Simulation complete: ${iterations} iterations`, 'success');
+    }, 100);
+}
+
+function calculateSingleSimulation(years, volatility) {
+    const projection = [];
+    const currentYear = new Date().getFullYear();
+    const adjustInflation = document.getElementById('adjust-inflation').checked;
+    const inflationValue = document.getElementById('inflation-rate').value;
+    const inflationRate = (inflationValue !== "" ? parseFloat(inflationValue) : 2.5) / 100;
+    
+    let currentBalances = {};
+    investments.forEach(inv => {
+        currentBalances[inv.id] = inv.type === 'Debt' ? -inv.amount : inv.amount;
+    });
+
+    for (let year = 0; year <= years; year++) {
+        let netWorth = 0;
+        Object.keys(currentBalances).forEach(id => {
+            netWorth += currentBalances[id];
+        });
+
+        const inflationFactor = adjustInflation ? Math.pow(1 + inflationRate, year) : 1;
+        projection.push(netWorth / inflationFactor);
+
+        if (year < years) {
+            // Apply growth with random volatility
+            investments.forEach(inv => {
+                const baseRate = inv.returnRate / 100;
+                // Add random noise based on volatility
+                const randomShock = boxMullerTransform() * volatility;
+                const effectiveRate = baseRate + randomShock;
+                
+                if (inv.type === 'Debt') {
+                    // Debt interest is usually fixed, but we'll apply it
+                    currentBalances[inv.id] *= (1 + (inv.returnRate / 100));
+                } else {
+                    currentBalances[inv.id] *= (1 + effectiveRate);
+                }
+            });
+
+            // Apply events
+            events.forEach(event => {
+                if (event.type === 'rebalancing') return;
+                
+                let apply = false;
+                if (event.isRecurring) {
+                    const startYear = event.startDate ? new Date(event.startDate).getFullYear() : currentYear;
+                    const endYear = event.endDate ? new Date(event.endDate).getFullYear() : 9999;
+                    if ((currentYear + year) >= startYear && (currentYear + year) <= endYear) {
+                        apply = true;
+                    }
+                } else {
+                    const eventYear = event.date ? new Date(event.date).getFullYear() : currentYear;
+                    if (eventYear === (currentYear + year)) {
+                        apply = true;
+                    }
+                }
+
+                if (apply) {
+                    const amount = event.amountType === 'percent' ? 0 : (event.amount || 0);
+                    if (event.type === 'income' && event.to) {
+                        if (currentBalances[event.to] !== undefined) currentBalances[event.to] += amount;
+                    } else if (event.type === 'expense' && event.from) {
+                        if (currentBalances[event.from] !== undefined) currentBalances[event.from] -= amount;
+                    } else if (event.type === 'withdrawal' && event.from) {
+                        if (currentBalances[event.from] !== undefined) currentBalances[event.from] -= amount;
+                    } else if (event.type === 'transfer' && event.from && event.to) {
+                        if (currentBalances[event.from] !== undefined && currentBalances[event.to] !== undefined) {
+                            currentBalances[event.from] -= amount;
+                            currentBalances[event.to] += amount;
+                        }
+                    }
+                }
+            });
+        }
+    }
+    return projection;
+}
+
+function processMonteCarloResults(simulations) {
+    const years = simulations[0].length;
+    const results = {
+        p10: [],
+        p50: [],
+        p90: [],
+        labels: [],
+        goalProbability: 0
+    };
+
+    const currentYear = new Date().getFullYear();
+    for (let year = 0; year < years; year++) {
+        results.labels.push(currentYear + year);
+        const yearValues = simulations.map(sim => sim[year]).sort((a, b) => a - b);
+        
+        results.p10.push(yearValues[Math.floor(simulations.length * 0.1)]);
+        results.p50.push(yearValues[Math.floor(simulations.length * 0.5)]);
+        results.p90.push(yearValues[Math.floor(simulations.length * 0.9)]);
+    }
+
+    // Goal probability: % of simulations where final net worth > combined goal amounts for those years
+    // For simplicity, we'll check against the largest goal amount
+    const maxGoal = goals.length > 0 ? Math.max(...goals.map(g => g.amount)) : 0;
+    if (maxGoal > 0) {
+        const successes = simulations.filter(sim => sim[sim.length - 1] >= maxGoal).length;
+        results.goalProbability = (successes / simulations.length) * 100;
+    } else {
+        results.goalProbability = 100; // No goals = 100% success
+    }
+
+    return results;
+}
+
+function displayMonteCarloResults(results) {
+    document.getElementById('mc-p90').textContent = '$' + formatNumber(results.p90[results.p90.length - 1]);
+    document.getElementById('mc-p50').textContent = '$' + formatNumber(results.p50[results.p50.length - 1]);
+    document.getElementById('mc-p10').textContent = '$' + formatNumber(results.p10[results.p10.length - 1]);
+    document.getElementById('mc-goal-probability').textContent = results.goalProbability.toFixed(1) + '%';
+
+    renderMonteCarloChart(results);
+}
+
+function renderMonteCarloChart(results) {
+    const ctx = document.getElementById('mc-chart').getContext('2d');
+    
+    if (charts.mc) charts.mc.destroy();
+    
+    charts.mc = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: results.labels,
+            datasets: [
+                {
+                    label: '90th Percentile (Best Case)',
+                    data: results.p90,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: false,
+                    borderDash: [5, 5],
+                    tension: 0.3
+                },
+                {
+                    label: '50th Percentile (Median)',
+                    data: results.p50,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    fill: true,
+                    tension: 0.3
+                },
+                {
+                    label: '10th Percentile (Worst Case)',
+                    data: results.p10,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    fill: false,
+                    borderDash: [5, 5],
+                    tension: 0.3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: value => '$' + formatNumber(value)
+                    }
+                }
             }
-        }, 1000);
-    }, 500);
+        }
+    });
 }
 
 function showLoadingState(elementId, isLoading = true) {
@@ -467,7 +786,8 @@ function switchTab(tabName) {
             'goals': 'Financial Goals',
             'export': 'Export & Share',
             'guide': 'User Guide',
-            'ai-analysis': 'AI Financial Analysis'
+            'ai-analysis': 'AI Financial Analysis',
+            'advanced': 'Advanced Simulations'
         };
         pageTitle.textContent = titles[tabName] || 'My Projection';
     }
@@ -774,7 +1094,22 @@ function renderInvestments() {
     container.innerHTML = '';
 
     if (investments.length === 0) {
-        container.innerHTML = '<p class="empty-state">No items added yet. Click "Add Investment/Debt" to get started.</p>';
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i data-lucide="briefcase"></i>
+                </div>
+                <div class="empty-state-content">
+                    <h3>No Assets Yet</h3>
+                    <p>Add your first investment, bank account, or property to start your projection.</p>
+                    <button class="btn btn-primary" onclick="showAddInvestmentModal()" style="margin-top: 1rem;">
+                        <i data-lucide="plus"></i>
+                        <span>Add Asset</span>
+                    </button>
+                </div>
+            </div>
+        `;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
         return;
     }
 
@@ -1020,19 +1355,6 @@ function toggleRecurringFields() {
     updateEventForm();
 }
 
-function handleValueTypeChange(prefix) {
-    const typeSelect = document.getElementById(prefix === 'unified' ? 'event-amount-type' : `${prefix}-type`);
-    const amountInput = document.getElementById(prefix === 'unified' ? 'event-amount' : `${prefix}-amount`);
-    if (!typeSelect || !amountInput) return;
-
-    const isRecurring = document.getElementById('event-is-recurring')?.checked;
-
-    if (typeSelect.value === 'percent') {
-        amountInput.value = '4';
-    } else {
-        amountInput.value = isRecurring ? '500' : '1000';
-    }
-}
 
 function renderRebalancingPreview() {
     const list = document.getElementById('rebalancing-preview-list');
@@ -1267,7 +1589,22 @@ function renderEvents() {
     container.innerHTML = '';
 
     if (events.length === 0) {
-        container.innerHTML = '<p class="empty-state">No events added yet. Add some financial events to see them here.</p>';
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i data-lucide="calendar"></i>
+                </div>
+                <div class="empty-state-content">
+                    <h3>No Financial Events</h3>
+                    <p>Model your life changes like salary increases, major purchases, or retirement withdrawals.</p>
+                    <button class="btn btn-primary" onclick="showAddEventModal('income')" style="margin-top: 1rem;">
+                        <i data-lucide="plus"></i>
+                        <span>Add Event</span>
+                    </button>
+                </div>
+            </div>
+        `;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
         return;
     }
 
@@ -1488,7 +1825,22 @@ function renderGoals() {
     container.innerHTML = '';
     
     if (goals.length === 0) {
-        container.innerHTML = '<p class="empty-state">No financial goals set yet. Add a goal to track your progress!</p>';
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i data-lucide="target"></i>
+                </div>
+                <div class="empty-state-content">
+                    <h3>No Goals Set</h3>
+                    <p>Set a target for retirement, a home purchase, or any other financial objective.</p>
+                    <button class="btn btn-primary" onclick="showAddGoalModal()" style="margin-top: 1rem;">
+                        <i data-lucide="plus"></i>
+                        <span>Set Goal</span>
+                    </button>
+                </div>
+            </div>
+        `;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
         return;
     }
     
@@ -3094,11 +3446,29 @@ function fallbackCopyToClipboard(text) {
 // Toast notification system
 function showToast(message, type = 'info', duration = 3000) {
     const container = document.getElementById('toast-container');
+    if (!container) return;
+    
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    toast.textContent = message;
+    
+    const icons = {
+        'success': 'check-circle',
+        'error': 'alert-circle',
+        'info': 'info',
+        'warning': 'alert-triangle'
+    };
+    
+    const iconName = icons[type] || 'info';
+    toast.innerHTML = `
+        <i data-lucide="${iconName}"></i>
+        <span>${message}</span>
+    `;
     
     container.appendChild(toast);
+    
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
     
     // Trigger animation
     setTimeout(() => {

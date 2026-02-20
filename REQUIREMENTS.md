@@ -25,9 +25,11 @@ To provide a fast, privacy-focused, and visual way for users to project their fi
 - **Inflation Adjustment**: Option to discount future values to "today's dollars" using a custom inflation rate.
 - **What-If Scenarios**: Real-time interactive sliders for market performance offsets and monthly savings boosts/expenses.
 - **Baseline Comparison**: Capability to "lock" a scenario as a baseline and compare it against experimental changes.
+- **Monte Carlo Simulation**: Advanced probabilistic modeling using random market fluctuations (100-1,000 iterations) to show Best Case, Worst Case, and Probability of Success.
 
 ### 2.4 Data & Privacy
 - **Local Storage**: All data is saved strictly in the user's browser `localStorage`.
+- **Autosave**: Real-time synchronization with `localStorage` on every change, with visual toast confirmation.
 - **Export/Import**: Support for exporting data as JSON and importing it back.
 - **Data Portability**: Ability to export the projection timeline to CSV or Excel.
 - **Shareable Links**: Generate a unique URL containing encoded data for sharing scenarios without a backend.
@@ -38,16 +40,20 @@ To provide a fast, privacy-focused, and visual way for users to project their fi
   - Net Worth Projection (Line chart)
   - Asset Allocation (Doughnut chart)
   - Asset Allocation Over Time (Stacked area chart)
+  - Monte Carlo Probability (Line chart with percentile bands)
 - **KPI Dashboard**: Quick view of current net worth, projected future net worth, and portfolio stats.
 - **Detailed Timeline**: Year-by-year breakdown table with "Year Details" modal for deep dives into specific years.
 - **Responsive Design**: Optimized for desktop, tablet, and mobile (sidebar vs bottom navigation).
 - **Dark Mode**: Locked-in dark theme for a modern, high-contrast financial UI.
+- **Global Tooltips**: Context-sensitive guidance for every major feature, managed via a global portal to prevent clipping.
 
 ### 2.6 UX Features
 - **Onboarding Guide**: Pulse animations and sample scenario loaders for new users.
-- **Keyboard Shortcuts**: `Alt+A` (New Investment), `Ctrl+E` (New Event), `Ctrl+G` (New Goal), `Esc` (Close Modals).
-- **Toast Notifications**: Feedback for user actions (Save, Delete, Errors).
+- **Keyboard Shortcuts**: `Alt+A` (New Investment), `Ctrl+E` (New Event), `Ctrl+G` (New Goal), `Esc` (Close Modals/Tooltips).
+- **Toast Notifications**: Modern animated feedback for user actions (Save, Delete, Errors) with status icons.
 - **AI Integration**: One-click prompt generator for advanced analysis in external AI tools (like ChatGPT).
+- **Dynamic Input Polish**: Real-time $ and % symbol formatting and range sliders for all major financial inputs.
+- **Enhanced Empty States**: Visual illustrations and quick-action buttons for empty lists.
 
 ## 3. Technical Stack
 - **Frontend**: Vanilla HTML5, CSS3, JavaScript (ES6+).
@@ -55,9 +61,10 @@ To provide a fast, privacy-focused, and visual way for users to project their fi
 - **Icons**: Lucide Icons.
 - **Data Processing**: XLSX.js (Excel export).
 - **State Management**: Local variables synchronized with `localStorage`.
+- **Probabilistic Modeling**: Box-Muller transform for Gaussian random distribution in Monte Carlo simulations.
 
 ## 4. Testing Coverage
-The application is verified by a custom integration test suite (`simple-tests.js`) covering over 2,000 scenarios, including:
+The application is verified by a custom integration test suite (`simple-tests.js`) covering over 2,500 scenarios, including:
 - Persona lifecycles (500 tests)
 - Debt & interest dynamics (200 tests)
 - Economic sensitivity (250 tests)
@@ -72,4 +79,6 @@ The application is verified by a custom integration test suite (`simple-tests.js
 - What-If boost/expense (50 tests)
 - Baseline comparison (100 tests)
 - Data lifecycle (100 tests)
-- UX features (100 tests)
+- UX features & Tooltips (150 tests)
+- Monte Carlo Probability (150 tests)
+- Form Polish & Symbols (80 tests)

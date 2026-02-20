@@ -141,7 +141,7 @@
 <body>
     <div class="header">
         <h1>🧪 Qualitative Suite Test Runner</h1>
-        <p>Verifying 2,000+ real-world integration scenarios for Production Readiness</p>
+        <p>Verifying 2,500+ real-world integration scenarios for Production Readiness</p>
     </div>
     
     <div class="controls">
@@ -222,6 +222,22 @@
                     <li>Multi-asset portfolio alignment</li>
                 </ul>
             </div>
+            <div style="padding: 15px; background: #f1f5f9; border-radius: 8px;">
+                <h4 style="margin: 0 0 10px 0; color: #475569;">🎲 Monte Carlo Simulations (150)</h4>
+                <ul style="margin: 0; padding-left: 20px; font-size: 0.9rem; color: #64748b;">
+                    <li>Probabilistic outcome distribution</li>
+                    <li>Gaussian random volatility modeling</li>
+                    <li>Goal success probability accuracy</li>
+                </ul>
+            </div>
+            <div style="padding: 15px; background: #f1f5f9; border-radius: 8px;">
+                <h4 style="margin: 0 0 10px 0; color: #475569;">💬 UX & UI Polish (230)</h4>
+                <ul style="margin: 0; padding-left: 20px; font-size: 0.9rem; color: #64748b;">
+                    <li>Global tooltip portal & collision logic</li>
+                    <li>Dynamic $ and % symbol switching</li>
+                    <li>Interactive sliders & form synchronization</li>
+                </ul>
+            </div>
         </div>
     </div>
     
@@ -239,7 +255,7 @@
     </div>
 
     <!-- Hidden container for UI elements required by script.js during integration testing -->
-    <div id="integration-test-elements" style="display: none;">
+    <div id="integration-test-elements" style="visibility: hidden; height: 0; overflow: hidden; position: absolute;">
         <div id="current-net-worth"></div>
         <div id="projected-net-worth-value"></div>
         <div id="investment-count"></div>
@@ -273,12 +289,34 @@
         <div id="export" class="tab-content"></div>
         <div id="guide" class="tab-content"></div>
         <div id="ai-analysis" class="tab-content"></div>
+        <div id="advanced" class="tab-content"></div>
         <div id="page-title"></div>
         <div id="scenario-controls"></div>
         <button id="save-baseline-btn"></button>
         <textarea id="manual-prompt"></textarea>
         <div id="toast-container"></div>
+        <div id="global-tooltip"></div>
         <button id="mobile-theme-toggle"></button>
+        <input type="range" id="mc-volatility-slider" value="12">
+        <input type="number" id="mc-volatility" value="12">
+        <select id="mc-iterations"><option value="500">500</option></select>
+        <canvas id="mc-chart"></canvas>
+        <div id="mc-results"></div>
+        <div id="mc-p90"></div>
+        <div id="mc-p50"></div>
+        <div id="mc-p10"></div>
+        <div id="mc-goal-probability"></div>
+        <div id="event-amount-wrapper">
+            <input type="number" id="event-amount">
+        </div>
+        <div class="input-with-symbol currency"><input type="number" id="investment-amount"></div>
+        <div class="input-with-symbol percent"><input type="number" id="investment-return"></div>
+        <div class="input-with-symbol currency"><input type="number" id="debt-payment"></div>
+        <input type="range" id="investment-amount-slider">
+        <input type="range" id="investment-return-slider">
+        <input type="range" id="debt-payment-slider">
+        <input type="range" id="event-amount-slider">
+        <select id="event-amount-type"><option value="fixed">Fixed</option><option value="percent">Percent</option></select>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

@@ -136,6 +136,10 @@
                     <i data-lucide="bot"></i>
                     <span>AI Analysis</span>
                 </button>
+                <button class="nav-item" data-tab="advanced">
+                    <i data-lucide="flask-conical"></i>
+                    <span>Advanced</span>
+                </button>
             </nav>
             
             <div class="sidebar-footer">
@@ -159,7 +163,7 @@
                 <!-- Dashboard Tab -->
                 <div class="tab-content active" id="dashboard">
                     <div class="kpi-grid">
-                        <div class="kpi-card primary" onclick="quickAddInvestment('Cash')" role="button" style="cursor: pointer;">
+                        <div class="kpi-card primary" onclick="quickAddInvestment('Cash')" role="button" style="cursor: pointer;" data-tooltip="Click to quickly add a new cash account or investment asset.">
                             <div class="kpi-header">
                                 <span>Current Net Worth</span>
                                 <i data-lucide="wallet"></i>
@@ -182,7 +186,7 @@
                             <div class="kpi-value" id="projected-net-worth-value">$0</div>
                             <div class="kpi-subtitle" id="projection-years-label">In 30 Years</div>
                         </div>
-                        <div class="kpi-card accent" onclick="quickAddEvent()" role="button" style="cursor: pointer;">
+                        <div class="kpi-card accent" onclick="quickAddEvent()" role="button" style="cursor: pointer;" data-tooltip="Click to add financial events like salary, bonuses, or major purchases.">
                             <div class="kpi-header">
                                 <span>Portfolio Summary</span>
                                 <i data-lucide="pie-chart"></i>
@@ -226,19 +230,19 @@
                                                 <input type="checkbox" id="adjust-inflation" onchange="toggleInflationInput()">
                                                 <span class="slider"></span>
                                             </label>
-                                            <span class="toggle-label">Inflation</span>
+                                            <span class="toggle-label" data-tooltip="Reduces your future net worth to show what it would be worth in today's dollars.">Inflation</span>
                                         </div>
                                         <div id="inflation-rate-wrapper" class="inflation-rate-input-wrapper" style="display: none;">
-                                            <input type="number" id="inflation-rate" step="0.1" value="2.5" min="0" max="20">
+                                            <input type="number" id="inflation-rate" step="0.1" value="2.5" min="0" max="20" data-tooltip="Expected annual inflation rate (Historically ~2.5%).">
                                             <span class="input-suffix">%</span>
                                         </div>
                                     </div>
-                                    <button id="save-baseline-btn" class="btn btn-outline btn-sm" onclick="saveBaseline()">
+                                    <button id="save-baseline-btn" class="btn btn-outline btn-sm" onclick="saveBaseline()" data-tooltip="Saves current projection to compare against future changes.">
                                         <i data-lucide="save"></i>
                                         <span>Set Baseline</span>
                                     </button>
                                     <div class="input-group">
-                                        <label for="projection-years-input">Years</label>
+                                        <label for="projection-years-input" data-tooltip="How many years into the future should we project?">Years</label>
                                         <input type="number" id="projection-years-input" min="1" max="60" value="30">
                                     </div>
                                     <button class="btn btn-primary" onclick="runProjection()">
@@ -341,7 +345,21 @@
                             <span>Add Investment/Debt</span>
                         </button>
                     </div>
-                    <div class="investments-list" id="investments-list"></div>
+                    <div class="investments-list" id="investments-list">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i data-lucide="briefcase"></i>
+                            </div>
+                            <div class="empty-state-content">
+                                <h3>No Assets Yet</h3>
+                                <p>Add your first investment, bank account, or property to start your projection.</p>
+                                <button class="btn btn-primary" onclick="showAddInvestmentModal()" style="margin-top: 1rem;">
+                                    <i data-lucide="plus"></i>
+                                    <span>Add Asset</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Events Tab -->
@@ -377,7 +395,21 @@
                             <div class="action-label">Withdrawal</div>
                         </button>
                     </div>
-                    <div class="events-list" id="events-list"></div>
+                    <div class="events-list" id="events-list">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i data-lucide="calendar"></i>
+                            </div>
+                            <div class="empty-state-content">
+                                <h3>No Financial Events</h3>
+                                <p>Model your life changes like salary increases, major purchases, or retirement withdrawals.</p>
+                                <button class="btn btn-primary" onclick="showAddEventModal('income')" style="margin-top: 1rem;">
+                                    <i data-lucide="plus"></i>
+                                    <span>Add Event</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Goals Tab -->
@@ -389,7 +421,21 @@
                             <span>Add Goal</span>
                         </button>
                     </div>
-                    <div class="goals-grid" id="goals-list"></div>
+                    <div class="goals-grid" id="goals-list">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i data-lucide="target"></i>
+                            </div>
+                            <div class="empty-state-content">
+                                <h3>No Goals Set</h3>
+                                <p>Set a target for retirement, a home purchase, or any other financial objective.</p>
+                                <button class="btn btn-primary" onclick="showAddGoalModal()" style="margin-top: 1rem;">
+                                    <i data-lucide="plus"></i>
+                                    <span>Set Goal</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Export Tab -->
@@ -462,6 +508,11 @@
                             <p>Generate a professional-grade prompt for ChatGPT based on your actual data. Get personalized insights on asset allocation, retirement readiness, and financial optimization in one click.</p>
                         </div>
                         <div class="card guide-card">
+                            <i data-lucide="flask-conical"></i>
+                            <h3>Advanced Simulations</h3>
+                            <p>Use <strong>Monte Carlo</strong> simulations to see the probability of success. It models 1000s of scenarios with random market fluctuations, helping you see the "Worst Case" and "Best Case" outcomes.</p>
+                        </div>
+                        <div class="card guide-card">
                             <i data-lucide="command"></i>
                             <h3>Hotkeys & Privacy</h3>
                             <p><strong>Alt + A</strong>: New Asset<br><strong>Ctrl + E</strong>: New Event<br><strong>Ctrl + G</strong>: New Goal<br><strong>Esc</strong>: Close Modal<br><br>Your data <strong>never leaves your device</strong>.</p>
@@ -485,6 +536,74 @@
                             <h3>Manual Analysis</h3>
                             <textarea id="manual-prompt" readonly></textarea>
                             <button class="btn btn-outline" onclick="copyManualPrompt()">Copy Prompt</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Tab -->
+                <div class="tab-content" id="advanced">
+                    <div class="content-header">
+                        <h2>Advanced Simulations</h2>
+                    </div>
+                    <div class="advanced-grid">
+                        <div class="card mc-card">
+                            <div class="mc-header">
+                                <i data-lucide="trending-up"></i>
+                                <h3>Monte Carlo Simulation</h3>
+                                <div class="mc-info-icon" data-tooltip="Simulates 1000s of scenarios with random market fluctuations to show the probability of reaching your goals.">
+                                    <i data-lucide="info" style="width: 14px; height: 14px;"></i>
+                                </div>
+                            </div>
+                            <p class="mc-description">See how market volatility impacts your projection. Unlike the standard linear projection, this models 1,000 potential futures.</p>
+                            
+                            <div class="mc-settings">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Expected Volatility (Std Dev %)</label>
+                                        <div class="slider-with-input">
+                                            <input type="range" id="mc-volatility-slider" min="0" max="30" step="0.5" value="12" oninput="document.getElementById('mc-volatility').value = this.value">
+                                            <input type="number" id="mc-volatility" min="0" max="30" step="0.5" value="12" oninput="document.getElementById('mc-volatility-slider').value = this.value">
+                                            <span class="input-suffix">%</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Number of Iterations</label>
+                                        <select id="mc-iterations">
+                                            <option value="100">100 (Fast)</option>
+                                            <option value="500" selected>500 (Balanced)</option>
+                                            <option value="1000">1,000 (Detailed)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary" onclick="runMonteCarlo()">
+                                    <i data-lucide="play"></i>
+                                    <span>Run Monte Carlo</span>
+                                </button>
+                            </div>
+
+                            <div class="mc-results" id="mc-results" style="display: none;">
+                                <div class="mc-stats-grid">
+                                    <div class="mc-stat-item">
+                                        <label>90th Percentile (Best Case)</label>
+                                        <span id="mc-p90" class="text-success">$0</span>
+                                    </div>
+                                    <div class="mc-stat-item">
+                                        <label>50th Percentile (Median)</label>
+                                        <span id="mc-p50" class="text-info">$0</span>
+                                    </div>
+                                    <div class="mc-stat-item">
+                                        <label>10th Percentile (Worst Case)</label>
+                                        <span id="mc-p10" class="text-danger">$0</span>
+                                    </div>
+                                </div>
+                                <div class="chart-container" style="height: 350px;">
+                                    <canvas id="mc-chart"></canvas>
+                                </div>
+                                <div class="mc-probability-card">
+                                    <div class="probability-label">Probability of reaching your goals:</div>
+                                    <div class="probability-value" id="mc-goal-probability">0%</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -546,16 +665,31 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label id="investment-amount-label">Initial Amount ($)</label>
-                        <input type="number" id="investment-amount" required value="10000">
+                        <div class="slider-with-input">
+                            <input type="range" id="investment-amount-slider" min="0" max="1000000" step="1000" value="10000" oninput="document.getElementById('investment-amount').value = this.value">
+                            <div class="input-with-symbol currency" data-symbol="$">
+                                <input type="number" id="investment-amount" required value="10000" oninput="document.getElementById('investment-amount-slider').value = this.value">
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label id="investment-return-label">Return Rate (%)</label>
-                        <input type="number" id="investment-return" required value="7" step="0.1">
+                        <label id="investment-return-label" data-tooltip="The expected annual growth rate of this asset. Stocks average 7-10%, Cash 2-4%.">Return Rate (%)</label>
+                        <div class="slider-with-input">
+                            <input type="range" id="investment-return-slider" min="-20" max="50" step="0.5" value="7" oninput="document.getElementById('investment-return').value = this.value">
+                            <div class="input-with-symbol percent">
+                                <input type="number" id="investment-return" required value="7" step="0.1" oninput="document.getElementById('investment-return-slider').value = this.value">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div id="debt-fields" class="form-group" style="display: none;">
-                    <label>Monthly Payment ($)</label>
-                    <input type="number" id="debt-payment" value="0">
+                    <label data-tooltip="The fixed monthly amount you pay towards this debt.">Monthly Payment ($)</label>
+                    <div class="slider-with-input">
+                        <input type="range" id="debt-payment-slider" min="0" max="10000" step="100" value="0" oninput="document.getElementById('debt-payment').value = this.value">
+                        <div class="input-with-symbol currency" data-symbol="$">
+                            <input type="number" id="debt-payment" value="0" oninput="document.getElementById('debt-payment-slider').value = this.value">
+                        </div>
+                    </div>
                     <span class="input-hint">This amount will be deducted from your first asset/income every month to pay down this debt.</span>
                 </div>
                 <div class="modal-footer">
@@ -631,8 +765,13 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label id="event-amount-label">Value (Amount or %)</label>
-                                <input type="number" id="event-amount">
+                                <label id="event-amount-label" data-tooltip="The amount for this event. Positive for income, negative for expenses.">Value (Amount or %)</label>
+                                <div class="slider-with-input">
+                                    <input type="range" id="event-amount-slider" min="0" max="100000" step="100" value="0" oninput="document.getElementById('event-amount').value = this.value">
+                                    <div class="input-with-symbol dynamic" id="event-amount-wrapper">
+                                        <input type="number" id="event-amount" oninput="document.getElementById('event-amount-slider').value = this.value">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -803,6 +942,7 @@
     </div>
 
     <div id="toast-container"></div>
+    <div id="global-tooltip"></div>
     <input type="file" id="import-file" style="display:none">
 
     <script src="script.js"></script>
