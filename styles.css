@@ -298,6 +298,23 @@ body {
     height: 16px;
 }
 
+/* General Layout */
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+    .content-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+}
+
 .viewport {
     padding: 2rem;
     max-width: 1600px;
@@ -872,21 +889,36 @@ input[type="range"]::-webkit-slider-thumb:hover {
     border: 1px solid var(--border-light);
     border-radius: var(--radius-lg);
     padding: 1.25rem;
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
     align-items: center;
-    justify-content: space-between;
+    gap: 1.25rem;
     margin-bottom: 1rem;
     transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Event items only have 3 children, so we adjust the columns */
+.event-item {
+    grid-template-columns: auto 1fr auto;
 }
 
 .investment-item:hover, .event-item:hover {
     transform: translateX(5px);
     border-color: var(--border-focus);
+    box-shadow: var(--shadow-md);
 }
 
 .investment-amount {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     font-weight: 700;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.event-actions {
+    display: flex;
+    gap: 0.5rem;
 }
 
 /* Events Page Redesign */
@@ -1255,10 +1287,13 @@ input, select, textarea {
     font-weight: 600;
 }
 
-.goal-actions {
+.event-actions, .goal-actions {
     display: flex;
     gap: 0.5rem;
     justify-content: flex-end;
+}
+
+.goal-actions {
     margin-top: auto;
 }
 
@@ -1286,6 +1321,19 @@ input, select, textarea {
     
     .viewport {
         padding: 1.5rem 1rem;
+    }
+}
+
+@media (max-width: 1024px) {
+    /* Hide sliders in forms on tablets and mobile */
+    .slider-with-input input[type="range"],
+    .modal input[type="range"] {
+        display: none !important;
+    }
+
+    .slider-with-input input[type="number"],
+    .slider-with-input .input-with-symbol {
+        width: 100% !important;
     }
 }
 
@@ -1372,12 +1420,198 @@ input, select, textarea {
     .bottom-nav-item.active { color: var(--border-focus); }
     .viewport { padding: 1rem; }
 
+    /* Content Header spacing on mobile */
+    .content-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        margin-bottom: 2rem !important;
+    }
+
+    /* Rethink projection table for mobile */
+    #projection-table thead {
+        display: none;
+    }
+
+    #projection-table tr {
+        display: block;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-xl);
+        padding: 1.25rem;
+        background: var(--bg-card);
+        box-shadow: var(--shadow-md);
+    }
+
+    #projection-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        text-align: right;
+        font-size: 0.95rem;
+    }
+
+    #projection-table td:last-child {
+        border-bottom: none;
+    }
+
+    #projection-table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--text-muted);
+        text-align: left;
+        margin-right: 1.5rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* List items (Investments & Events) on mobile */
+    .investment-item, .event-item {
+        grid-template-columns: auto 1fr !important;
+        gap: 0.75rem 1rem !important;
+        padding: 1.25rem !important;
+    }
+
+    .event-content {
+        grid-column: 2;
+    }
+
+    .investment-amount {
+        grid-column: 2;
+        text-align: left !important;
+        font-size: 1.25rem !important;
+        margin: 0.25rem 0 !important;
+    }
+
+    .event-actions {
+        grid-column: 1 / -1;
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+        margin-top: 0.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-light);
+    }
+
+    .event-actions .btn {
+        flex: 1;
+        justify-content: center;
+        max-width: 120px;
+    }
+
+    .modal {
+        padding: 0.5rem;
+    }
+
     .quick-share-btn span {
         display: none;
     }
     
     .quick-share-btn {
         padding: 0.5rem;
+    }
+
+    /* Hide sliders in forms on mobile */
+    .slider-with-input input[type="range"],
+    .modal input[type="range"] {
+        display: none !important;
+    }
+
+    /* Compact modals on mobile to avoid scrolling */
+    .modal-content {
+        max-height: 98vh;
+        width: 98% !important;
+        margin: 0 auto;
+        border-radius: var(--radius-lg) !important;
+    }
+
+    .modal-header {
+        padding: 0.4rem 0.8rem !important;
+    }
+
+    .modal-header h3 {
+        font-size: 0.95rem !important;
+    }
+
+    form, .modal-body {
+        padding: 0.4rem 0.8rem !important;
+    }
+
+    .form-group {
+        margin-bottom: 0.3rem !important;
+    }
+
+    .form-row {
+        gap: 0.3rem !important;
+    }
+
+    label {
+        margin-bottom: 0.1rem !important;
+        font-size: 0.65rem !important;
+        font-weight: 700 !important;
+    }
+
+    input, select, textarea {
+        padding: 0.35rem 0.5rem !important;
+        font-size: 0.8rem !important;
+        height: 32px !important;
+    }
+
+    .input-hint {
+        display: none !important;
+    }
+
+    #recurring-toggle-group {
+        margin-bottom: 0.3rem !important;
+        padding: 0.25rem 0.5rem !important;
+        background: rgba(99, 102, 241, 0.03) !important;
+    }
+
+    #recurring-toggle-group label {
+        margin-bottom: 0 !important;
+        font-size: 0.75rem !important;
+    }
+
+    .modal-footer {
+        padding: 0.4rem 0.8rem !important;
+    }
+
+    .modal-footer .btn {
+        padding: 0.3rem 0.6rem !important;
+        font-size: 0.75rem !important;
+    }
+
+    /* Special adjustment for sliders in modals on mobile */
+    .slider-with-input {
+        margin-top: 0;
+    }
+
+    .slider-with-input input[type="number"] {
+        width: 100% !important;
+    }
+
+    .input-with-symbol {
+        width: 100%;
+    }
+}
+
+/* Broad rule to hide sliders on all touch devices/small screens */
+@media (max-width: 1024px) {
+    input[type="range"] {
+        display: none !important;
+    }
+    
+    .slider-with-input {
+        display: block !important;
+    }
+
+    .slider-with-input .input-with-symbol,
+    .slider-with-input input[type="number"] {
+        width: 100% !important;
+        margin: 0 !important;
     }
 }
 

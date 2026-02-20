@@ -1490,21 +1490,23 @@ function renderInvestments() {
         item.className = 'investment-item' + (investment.type === 'Debt' ? ' debt-item' : '');
         
         const isDebt = investment.type === 'Debt';
-        const rateLabel = isDebt ? 'interest' : 'return';
+        const rateLabel = isDebt ? 'Interest' : 'Return';
         const amountDisplay = isDebt ? `-$${formatNumber(investment.amount)}` : `$${formatNumber(investment.amount)}`;
-        const paymentInfo = isDebt ? ` • $${formatNumber(investment.monthlyPayment)}/mo payment` : '';
+        const paymentInfo = isDebt ? ` • $${formatNumber(investment.monthlyPayment)}/mo` : '';
+        const icon = isDebt ? 'landmark' : (investment.type === 'Real Estate' ? 'home' : (investment.type === 'Cash' ? 'banknote' : 'trending-up'));
 
         item.innerHTML = `
-            <div class="investment-info">
-                <div class="investment-name">${investment.name} ${isDebt ? '<span class="badge debt">Debt</span>' : ''}</div>
-                <div class="investment-details">
-                    ${investment.type} • ${investment.returnRate}% ${rateLabel}${paymentInfo}
-                </div>
+            <div class="event-type-icon ${isDebt ? 'expense' : 'income'}">
+                <i data-lucide="${icon}"></i>
             </div>
-            <div class="investment-amount ${isDebt ? 'text-danger' : ''}">${amountDisplay}</div>
-            <div class="investment-actions">
-                <button class="btn btn-secondary" onclick="editInvestment('${investment.id}')">Edit</button>
-                <button class="btn btn-danger" onclick="deleteInvestment('${investment.id}')">Delete</button>
+            <div class="event-content">
+                <div class="event-title">${investment.name} ${isDebt ? '<span class="badge debt">Debt</span>' : ''}</div>
+                <div class="event-details">${investment.type} • ${investment.returnRate}% ${rateLabel}${paymentInfo}</div>
+            </div>
+            <div class="investment-amount ${isDebt ? 'text-danger' : ''}" style="margin-right: 1rem; font-weight: 700;">${amountDisplay}</div>
+            <div class="event-actions">
+                <button class="btn btn-outline btn-sm" onclick="editInvestment('${investment.id}')"><i data-lucide="edit-2"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="deleteInvestment('${investment.id}')"><i data-lucide="trash-2"></i></button>
             </div>
         `;
         container.appendChild(item);
@@ -2288,7 +2290,7 @@ function renderGoals() {
                 </div>
             </div>
             
-            <div class="goal-actions">
+            <div class="goal-actions event-actions">
                 <button class="btn btn-outline btn-sm" onclick="editGoal('${goal.id}')">
                     <i data-lucide="edit-2"></i>
                 </button>
@@ -3408,25 +3410,25 @@ function updateProjectionTable() {
     if (investments.length > 0) {
         initialTotalNetWorth = initialData ? (initialData.totalNetWorth * (initialData.isInflationAdjusted ? 1 : 1)) : getCurrentNetWorth();
         initialRowHTML = `
-            <td>${currentYear} (Initial)</td>
-            <td>$${formatNumber(initialTotalNetWorth)}</td>
-            <td>$0</td>
-            <td>Initial Values</td>
+            <td data-label="Year">${currentYear} (Initial)</td>
+            <td data-label="Net Worth">$${formatNumber(initialTotalNetWorth)}</td>
+            <td data-label="Growth">$0</td>
+            <td data-label="Events">Initial Values</td>
         `;
         // Investment balance columns - use initial amounts
         investments.forEach(investment => {
             const balance = initialData ? (initialData.balances[investment.id] || 0) : (investment.type === 'Debt' ? -investment.amount : investment.amount);
-            initialRowHTML += `<td>$${formatNumber(balance)}</td>`;
+            initialRowHTML += `<td data-label="${investment.name}">$${formatNumber(balance)}</td>`;
         });
     } else {
         // Use virtual balance for initial row
         initialTotalNetWorth = initialData ? initialData.totalNetWorth : 0;
         initialRowHTML = `
-            <td>${currentYear} (Initial)</td>
-            <td>$${formatNumber(initialTotalNetWorth)}</td>
-            <td>$0</td>
-            <td>Initial Values</td>
-            <td>$${formatNumber(initialTotalNetWorth)}</td>
+            <td data-label="Year">${currentYear} (Initial)</td>
+            <td data-label="Net Worth">$${formatNumber(initialTotalNetWorth)}</td>
+            <td data-label="Growth">$0</td>
+            <td data-label="Events">Initial Values</td>
+            <td data-label="Virtual Balance">$${formatNumber(initialTotalNetWorth)}</td>
         `;
     }
     const initialRow = document.createElement('tr');
@@ -3462,21 +3464,21 @@ function updateProjectionTable() {
         
         // Base columns
         let rowHTML = `
-            <td>${projection.year}</td>
-            <td>$${formatNumber(projection.totalNetWorth)}</td>
-            <td>${growthDisplay}</td>
-            <td>${projection.events.join(', ') || 'None'}</td>
+            <td data-label="Year">${projection.year}</td>
+            <td data-label="Net Worth">$${formatNumber(projection.totalNetWorth)}</td>
+            <td data-label="Growth">${growthDisplay}</td>
+            <td data-label="Events">${projection.events.join(', ') || 'None'}</td>
         `;
         if (investments.length > 0) {
             // Investment balance columns - use the final balances after growth
             investments.forEach(investment => {
                 const balance = projection.balances[investment.id] || 0;
-                rowHTML += `<td>$${formatNumber(balance)}</td>`;
+                rowHTML += `<td data-label="${investment.name}">$${formatNumber(balance)}</td>`;
             });
         } else {
             // Show virtual balance
             const virtualBalance = projection.balances['virtual'] || 0;
-            rowHTML += `<td>$${formatNumber(virtualBalance)}</td>`;
+            rowHTML += `<td data-label="Virtual Balance">$${formatNumber(virtualBalance)}</td>`;
         }
         row.innerHTML = rowHTML;
         tbody.appendChild(row);
