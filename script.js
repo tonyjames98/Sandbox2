@@ -577,6 +577,370 @@ function renderMonteCarloChart(results) {
     });
 }
 
+// Advanced Simulations Logic
+
+function runSequenceOfReturns() {
+    const magnitude = parseFloat(document.getElementById('sor-magnitude').value) / 100;
+    const crashYear = parseInt(document.getElementById('sor-crash-year').value) || 1;
+    const years = parseInt(document.getElementById('projection-years-input').value) || 30;
+    
+    if (investments.length === 0) {
+        showToast('Add at least one asset to run simulations.', 'error');
+        return;
+    }
+
+    const resultsDiv = document.getElementById('sor-results');
+    const summaryDiv = document.getElementById('sor-impact-summary');
+    resultsDiv.style.display = 'block';
+
+    // Baseline: Normal projection
+    const baseline = calculateProjection(years);
+    const baselineFinal = baseline[baseline.length - 1].totalNetWorth;
+
+    // Stress Test: Large drop starting at crashYear
+    const stressProjection = calculateCustomProjection(years, (year, inv) => {
+        let rate = (inv.returnRate || 0) / 100;
+        if (year === crashYear || year === crashYear + 1) {
+            rate = -magnitude / 2; // Split the total magnitude over 2 years
+        }
+        return rate;
+    });
+    const stressFinal = stressProjection[stressProjection.length - 1].totalNetWorth;
+
+    const diff = baselineFinal - stressFinal;
+    const percentLoss = (diff / baselineFinal) * 100;
+
+    summaryDiv.innerHTML = `Crash in Year ${crashYear} Impact: <span class="text-danger">-$${formatNumber(diff)}</span> (${percentLoss.toFixed(1)}% reduction in final wealth)`;
+
+    renderComparisonChart('sor-chart', baseline, stressProjection, 'Baseline', 'Crash Scenario');
+    showToast('Sequence of Returns Stress Test complete.', 'success');
+}
+
+function runFireSWR() {
+    const swr = parseFloat(document.getElementById('fire-swr').value) / 100;
+    const annualExpenses = parseFloat(document.getElementById('fire-expenses').value) || 60000;
+    const years = parseInt(document.getElementById('projection-years-input').value) || 30;
+
+    const fiNumber = annualExpenses / swr;
+    const currentAssets = investments.filter(i => i.type !== 'Debt').reduce((sum, i) => sum + i.amount, 0);
+    const progress = (currentAssets / fiNumber) * 100;
+
+    // Find the year they hit the FI number in their current projection
+    const projection = calculateProjection(years);
+    let fiYear = null;
+    let currentYear = new Date().getFullYear();
+
+    for (let i = 0; i < projection.length; i++) {
+        if (projection[i].totalNetWorth >= fiNumber) {
+            fiYear = currentYear + i;
+            break;
+        }
+    }
+
+    document.getElementById('fire-results').style.display = 'block';
+    document.getElementById('fire-number-val').textContent = `$${formatNumber(fiNumber)}`;
+    
+    const statusDiv = document.getElementById('fire-success-rate');
+    let statusHTML = `Current Progress: ${progress.toFixed(1)}% of FI Goal<br>`;
+    if (fiYear) {
+        statusHTML += `<span class="text-success">Estimated FI Date: <strong>${fiYear}</strong></span>`;
+    } else {
+        statusHTML += `<span class="text-danger">FI Number not reached within ${years} years.</span>`;
+    }
+    statusDiv.innerHTML = statusHTML;
+    
+    showToast('FIRE Analysis complete.', 'success');
+}
+
+function runCompoundInterest() {
+    const principal = parseFloat(document.getElementById('ci-principal').value) || 0;
+    const annualAddition = parseFloat(document.getElementById('ci-annual').value) || 0;
+    const years = parseInt(document.getElementById('ci-years').value) || 10;
+    const rate = (parseFloat(document.getElementById('ci-rate').value) || 0) / 100;
+    
+    const resultsDiv = document.getElementById('ci-results');
+    resultsDiv.style.display = 'block';
+
+    let currentBalance = principal;
+    const dataPoints = [principal];
+    const contributionPoints = [principal];
+    
+    for (let year = 1; year <= years; year++) {
+        currentBalance = (currentBalance * (1 + rate)) + annualAddition;
+        dataPoints.push(currentBalance);
+        contributionPoints.push(principal + (annualAddition * year));
+    }
+
+    const totalContributions = principal + (annualAddition * years);
+    const totalInterest = currentBalance - totalContributions;
+
+    document.getElementById('ci-future-val').textContent = '$' + formatNumber(currentBalance);
+    document.getElementById('ci-total-contributions').textContent = '$' + formatNumber(totalContributions);
+    document.getElementById('ci-total-interest').textContent = '$' + formatNumber(totalInterest);
+
+    renderCIChart(dataPoints, contributionPoints);
+    showToast('Compound interest calculation complete.', 'success');
+}
+
+function runAmortization() {
+    const principal = parseFloat(document.getElementById('loan-amount').value) || 0;
+    const annualRate = parseFloat(document.getElementById('loan-rate').value) || 0;
+    const years = parseInt(document.getElementById('loan-years').value) || 30;
+    
+    const monthlyRate = annualRate / 100 / 12;
+    const numberOfPayments = years * 12;
+    
+    // Monthly payment formula: P [ i(1 + i)^n ] / [ (1 + i)^n – 1 ]
+    let monthlyPayment = 0;
+    if (monthlyRate > 0) {
+        monthlyPayment = principal * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+    } else {
+        monthlyPayment = principal / numberOfPayments;
+    }
+
+    const totalCost = monthlyPayment * numberOfPayments;
+    const totalInterest = totalCost - principal;
+
+    document.getElementById('loan-monthly-val').textContent = '$' + formatNumber(monthlyPayment);
+    document.getElementById('loan-total-principal').textContent = '$' + formatNumber(principal);
+    document.getElementById('loan-total-interest').textContent = '$' + formatNumber(totalInterest);
+    document.getElementById('loan-total-cost').textContent = '$' + formatNumber(totalCost);
+
+    const resultsDiv = document.getElementById('loan-results');
+    resultsDiv.style.display = 'block';
+
+    // Generate schedule and render
+    const schedule = [];
+    let remainingBalance = principal;
+    let yearlyPrincipal = 0;
+    let yearlyInterest = 0;
+    const principalSeries = [];
+    const interestSeries = [];
+
+    for (let month = 1; month <= numberOfPayments; month++) {
+        const interestPayment = remainingBalance * monthlyRate;
+        const principalPayment = monthlyPayment - interestPayment;
+        
+        remainingBalance -= principalPayment;
+        yearlyPrincipal += principalPayment;
+        yearlyInterest += interestPayment;
+
+        if (month % 12 === 0 || month === numberOfPayments) {
+            const yearNum = Math.ceil(month / 12);
+            schedule.push({
+                year: yearNum,
+                principal: yearlyPrincipal,
+                interest: yearlyInterest,
+                remaining: Math.max(0, remainingBalance)
+            });
+            principalSeries.push(yearlyPrincipal);
+            interestSeries.push(yearlyInterest);
+            yearlyPrincipal = 0;
+            yearlyInterest = 0;
+        }
+    }
+
+    renderAmortizationTable(schedule);
+    renderAmortizationChart(schedule.map(s => s.year), principalSeries, interestSeries);
+    showToast('Amortization schedule calculated.', 'success');
+}
+
+function renderAmortizationTable(schedule) {
+    const tbody = document.querySelector('#amortization-table tbody');
+    tbody.innerHTML = '';
+    
+    schedule.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>Year ${row.year}</td>
+            <td>$${formatNumber(row.principal)}</td>
+            <td>$${formatNumber(row.interest)}</td>
+            <td>$${formatNumber(row.remaining)}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function renderAmortizationChart(labels, principalData, interestData) {
+    const ctx = document.getElementById('loan-chart');
+    if (!ctx) return;
+
+    if (window.simCharts && window.simCharts['loan-chart']) {
+        window.simCharts['loan-chart'].destroy();
+    }
+    if (!window.simCharts) window.simCharts = {};
+
+    window.simCharts['loan-chart'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels.map(l => `Year ${l}`),
+            datasets: [
+                {
+                    label: 'Principal Paid',
+                    data: principalData,
+                    backgroundColor: '#3b82f6',
+                    stack: 'Stack 0',
+                },
+                {
+                    label: 'Interest Paid',
+                    data: interestData,
+                    backgroundColor: '#ef4444',
+                    stack: 'Stack 0',
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', boxWidth: 12 } }
+            },
+            scales: {
+                y: { 
+                    stacked: true,
+                    ticks: { color: '#94a3b8', callback: val => '$' + formatNumber(val) }, 
+                    grid: { color: 'rgba(148, 163, 184, 0.1)' } 
+                },
+                x: { 
+                    stacked: true,
+                    ticks: { color: '#94a3b8' }, 
+                    grid: { display: false } 
+                }
+            }
+        }
+    });
+}
+
+function renderCIChart(data, contributions) {
+    const ctx = document.getElementById('ci-chart');
+    if (!ctx) return;
+
+    if (window.simCharts && window.simCharts['ci-chart']) {
+        window.simCharts['ci-chart'].destroy();
+    }
+    if (!window.simCharts) window.simCharts = {};
+
+    window.simCharts['ci-chart'] = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.map((_, i) => `Year ${i}`),
+            datasets: [
+                {
+                    label: 'Total Balance',
+                    data: data,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    pointRadius: 0
+                },
+                {
+                    label: 'Total Contributions',
+                    data: contributions,
+                    borderColor: '#94a3b8',
+                    borderDash: [5, 5],
+                    fill: false,
+                    pointRadius: 0
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', boxWidth: 12 } }
+            },
+            scales: {
+                y: { ticks: { color: '#94a3b8', callback: val => '$' + formatNumber(val) }, grid: { color: 'rgba(148, 163, 184, 0.1)' } },
+                x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+            }
+        }
+    });
+}
+
+// Helper Simulation Engines
+
+function calculateCustomProjection(years, rateCallback) {
+    const projection = [];
+    let currentBalances = {};
+    investments.forEach(inv => {
+        currentBalances[inv.id] = inv.type === 'Debt' ? -inv.amount : inv.amount;
+    });
+
+    for (let year = 0; year <= years; year++) {
+        let netWorth = 0;
+        Object.values(currentBalances).forEach(val => netWorth += val);
+        projection.push({ totalNetWorth: netWorth });
+
+        if (year < years) {
+            investments.forEach(inv => {
+                const rate = rateCallback(year + 1, inv);
+                currentBalances[inv.id] *= (1 + rate);
+            });
+            // Apply recurring events (simplified for simulations)
+            events.forEach(event => {
+                if (event.isRecurring || event.type.includes('recurring')) {
+                    const amount = event.amount || 0;
+                    const targetId = event.to || event.from || (Object.keys(currentBalances)[0]);
+                    if (event.type.includes('income')) {
+                        if (currentBalances[targetId] !== undefined) currentBalances[targetId] += amount;
+                    } else {
+                        if (currentBalances[targetId] !== undefined) currentBalances[targetId] -= amount;
+                    }
+                }
+            });
+        }
+    }
+    return projection;
+}
+
+// Helper Charting Functions
+
+function renderComparisonChart(canvasId, baseline, scenario, label1, label2) {
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+    
+    if (window.simCharts && window.simCharts[canvasId]) {
+        window.simCharts[canvasId].destroy();
+    }
+    if (!window.simCharts) window.simCharts = {};
+
+    window.simCharts[canvasId] = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: baseline.map((_, i) => `Year ${i}`),
+            datasets: [
+                {
+                    label: label1,
+                    data: baseline.map(d => d.totalNetWorth),
+                    borderColor: '#94a3b8',
+                    borderDash: [5, 5],
+                    fill: false,
+                    pointRadius: 0
+                },
+                {
+                    label: label2,
+                    data: scenario.map(d => d.totalNetWorth),
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    pointRadius: 0
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', boxWidth: 12 } }
+            },
+            scales: {
+                y: { ticks: { color: '#94a3b8', callback: val => '$' + formatNumber(val) }, grid: { color: 'rgba(148, 163, 184, 0.1)' } },
+                x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+            }
+        }
+    });
+}
+
 function showLoadingState(elementId, isLoading = true) {
     const element = document.getElementById(elementId);
     if (!element) return;

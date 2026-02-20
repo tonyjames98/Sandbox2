@@ -511,6 +511,175 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Sequence of Returns Risk -->
+                        <div class="card sim-card">
+                            <div class="sim-header">
+                                <i data-lucide="alert-triangle"></i>
+                                <h3>Sequence of Returns Risk</h3>
+                                <div class="mc-info-icon" data-tooltip="Tests the impact of a market crash happening in the year you specify.">
+                                    <i data-lucide="info" style="width: 14px; height: 14px;"></i>
+                                </div>
+                            </div>
+                            <p class="sim-description">What if a crash happens exactly when you stop working or start a new phase?</p>
+                            <div class="sim-settings">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Crash Year</label>
+                                        <input type="number" id="sor-crash-year" value="1" min="1" max="50">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Magnitude (%)</label>
+                                        <input type="number" id="sor-magnitude" value="25" min="0" max="100">
+                                    </div>
+                                </div>
+                                <button class="btn btn-outline btn-sm" onclick="runSequenceOfReturns()">Run Stress Test</button>
+                            </div>
+                            <div class="sim-results" id="sor-results" style="display: none;">
+                                <div id="sor-impact-summary" class="impact-summary"></div>
+                                <div class="chart-container" style="height: 250px;">
+                                    <canvas id="sor-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FIRE SWR Analyzer -->
+                        <div class="card sim-card">
+                            <div class="sim-header">
+                                <i data-lucide="flame"></i>
+                                <h3>FIRE SWR Analyzer</h3>
+                                <div class="mc-info-icon" data-tooltip="Calculates your Financial Independence (FI) number and when you'll hit it.">
+                                    <i data-lucide="info" style="width: 14px; height: 14px;"></i>
+                                </div>
+                            </div>
+                            <p class="sim-description">Enter your target expenses to find your 'FI Number' and projection date.</p>
+                            <div class="sim-settings">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Yearly Expenses ($)</label>
+                                        <input type="number" id="fire-expenses" value="60000" min="0">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>SWR (%)</label>
+                                        <input type="number" id="fire-swr" value="4" min="0" max="10" step="0.1">
+                                    </div>
+                                </div>
+                                <button class="btn btn-outline btn-sm" onclick="runFireSWR()">Analyze FIRE</button>
+                            </div>
+                            <div class="sim-results" id="fire-results" style="display: none;">
+                                <div class="fi-number-card">
+                                    <label>Required FI Number:</label>
+                                    <div id="fire-number-val" class="fi-val">$0</div>
+                                </div>
+                                <div id="fire-success-rate" class="fi-status"></div>
+                            </div>
+                        </div>
+
+                        <!-- Compound Interest Calculator -->
+                        <div class="card sim-card">
+                            <div class="sim-header">
+                                <i data-lucide="line-chart"></i>
+                                <h3>Compound Interest Calculator</h3>
+                                <div class="mc-info-icon" data-tooltip="Standalone calculator to see how a single investment grows over time with regular additions.">
+                                    <i data-lucide="info" style="width: 14px; height: 14px;"></i>
+                                </div>
+                            </div>
+                            <p class="sim-description">Calculate growth for a single scenario without affecting your main plan.</p>
+                            <div class="sim-settings">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Initial Principal ($)</label>
+                                        <input type="number" id="ci-principal" value="10000" min="0">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Annual Addition ($)</label>
+                                        <input type="number" id="ci-annual" value="12000" min="0">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Years to Grow</label>
+                                        <input type="number" id="ci-years" value="20" min="1" max="100">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Interest Rate (%)</label>
+                                        <input type="number" id="ci-rate" value="7" min="0" max="100" step="0.1">
+                                    </div>
+                                </div>
+                                <button class="btn btn-outline btn-sm" onclick="runCompoundInterest()">Calculate Growth</button>
+                            </div>
+                            <div class="sim-results" id="ci-results" style="display: none;">
+                                <div class="fi-number-card">
+                                    <label>Future Value:</label>
+                                    <div id="ci-future-val" class="fi-val">$0</div>
+                                </div>
+                                <div class="impact-summary">
+                                    Total Contributions: <span id="ci-total-contributions">$0</span><br>
+                                    Total Interest: <span id="ci-total-interest" class="text-success">$0</span>
+                                </div>
+                                <div class="chart-container" style="height: 200px;">
+                                    <canvas id="ci-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Loan Amortization Calculator -->
+                        <div class="card sim-card">
+                            <div class="sim-header">
+                                <i data-lucide="calculator"></i>
+                                <h3>Loan Amortization</h3>
+                                <div class="mc-info-icon" data-tooltip="Standalone loan calculator to see your monthly payments and interest breakdown over the life of a loan.">
+                                    <i data-lucide="info" style="width: 14px; height: 14px;"></i>
+                                </div>
+                            </div>
+                            <p class="sim-description">Calculate monthly payments and see how much interest you'll pay over time.</p>
+                            <div class="sim-settings">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Loan Amount ($)</label>
+                                        <input type="number" id="loan-amount" value="300000" min="0">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Interest Rate (%)</label>
+                                        <input type="number" id="loan-rate" value="6.5" min="0" max="100" step="0.1">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Loan Term (Years)</label>
+                                        <input type="number" id="loan-years" value="30" min="1" max="50">
+                                    </div>
+                                </div>
+                                <button class="btn btn-outline btn-sm" onclick="runAmortization()">Calculate Loan</button>
+                            </div>
+                            <div class="sim-results" id="loan-results" style="display: none;">
+                                <div class="fi-number-card">
+                                    <label>Monthly Payment:</label>
+                                    <div id="loan-monthly-val" class="fi-val">$0</div>
+                                </div>
+                                <div class="impact-summary">
+                                    Total Principal: <span id="loan-total-principal">$0</span><br>
+                                    Total Interest: <span id="loan-total-interest" class="text-danger">$0</span><br>
+                                    Total Cost: <span id="loan-total-cost">$0</span>
+                                </div>
+                                <div class="chart-container" style="height: 200px; margin-bottom: 1.5rem;">
+                                    <canvas id="loan-chart"></canvas>
+                                </div>
+                                <div class="table-container" style="max-height: 300px; overflow-y: auto;">
+                                    <table id="amortization-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Year</th>
+                                                <th>Principal</th>
+                                                <th>Interest</th>
+                                                <th>Remaining</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -586,7 +755,7 @@
                         <div class="card guide-card">
                             <i data-lucide="flask-conical"></i>
                             <h3>Advanced Simulations</h3>
-                            <p>Use <strong>Monte Carlo</strong> simulations to see the probability of success. It models 1000s of scenarios with random market fluctuations, helping you see the "Worst Case" and "Best Case" outcomes.</p>
+                            <p>Use <strong>Monte Carlo</strong> to see probability of success, <strong>Sequence of Returns</strong> to test crash timing, <strong>FIRE SWR</strong> to find your Financial Independence date, <strong>Compound Interest</strong> for quick growth estimates, and <strong>Loan Amortization</strong> to see your payment breakdown.</p>
                         </div>
                         <div class="card guide-card">
                             <i data-lucide="command"></i>
