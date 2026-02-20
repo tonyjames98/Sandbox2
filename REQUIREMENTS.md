@@ -60,9 +60,9 @@ The application is a browser-based tool that allows users to input their current
 
 ### 3.8 Shortcuts & Accessibility
 *   **FR-8.1: Keyboard Shortcuts:** The application shall provide quick shortcuts for power users:
-    *   `Ctrl/Cmd + N`: Add New Investment.
-    *   `Ctrl/Cmd + E`: Add New Event.
-    *   `Ctrl/Cmd + G`: Add New Goal.
+    *   `Ctrl/Cmd + N`: Add New Investment Row.
+    *   `Ctrl/Cmd + E`: Add New Event Row.
+    *   `Ctrl/Cmd + G`: Add New Goal Row.
     *   `Escape`: Close any open modal.
 *   **FR-8.2: Visual Feedback:** The system shall provide "Toast" notifications for successful actions (e.g., "Data saved", "Data imported", "Link copied").
 *   **FR-8.3: Sidebar & Menu:** Desktop users have a fixed sidebar for navigation, while mobile users use a hamburger-toggle menu.
