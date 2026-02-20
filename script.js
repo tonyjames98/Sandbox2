@@ -203,8 +203,8 @@ function loadSampleScenario() {
 // Enhanced UX features
 function setupKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
-        // Ctrl/Cmd + N for new investment
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'n' || e.key === 'N')) {
+        // Alt + A for new investment
+        if (e.altKey && (e.key === 'a' || e.key === 'A')) {
             e.preventDefault();
             showAddInvestmentModal();
         }

@@ -45,7 +45,7 @@ To provide a fast, privacy-focused, and visual way for users to project their fi
 
 ### 2.6 UX Features
 - **Onboarding Guide**: Pulse animations and sample scenario loaders for new users.
-- **Keyboard Shortcuts**: `Ctrl+N` (New Investment), `Ctrl+E` (New Event), `Ctrl+G` (New Goal), `Esc` (Close Modals).
+- **Keyboard Shortcuts**: `Alt+A` (New Investment), `Ctrl+E` (New Event), `Ctrl+G` (New Goal), `Esc` (Close Modals).
 - **Toast Notifications**: Feedback for user actions (Save, Delete, Errors).
 - **AI Integration**: One-click prompt generator for advanced analysis in external AI tools (like ChatGPT).
 
