@@ -77,7 +77,15 @@ function initTooltips() {
                 if (!currentTarget) return;
                 const rect = currentTarget.getBoundingClientRect();
                 tooltip.style.left = `${rect.left + rect.width / 2}px`;
-                tooltip.style.top = `${rect.top}px`;
+                
+                // Flip tooltip to bottom if it's too close to the top of the viewport
+                if (rect.top < 100) {
+                    tooltip.classList.add('tooltip-bottom');
+                    tooltip.style.top = `${rect.bottom}px`;
+                } else {
+                    tooltip.classList.remove('tooltip-bottom');
+                    tooltip.style.top = `${rect.top}px`;
+                }
             };
 
             updatePositionRef();

@@ -275,6 +275,29 @@ body {
     z-index: 40;
 }
 
+.top-bar-left {
+    display: flex;
+    align-items: center;
+}
+
+.top-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.quick-share-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+}
+
+.quick-share-btn i {
+    width: 16px;
+    height: 16px;
+}
+
 .viewport {
     padding: 2rem;
     max-width: 1600px;
@@ -1348,6 +1371,14 @@ input, select, textarea {
     }
     .bottom-nav-item.active { color: var(--border-focus); }
     .viewport { padding: 1rem; }
+
+    .quick-share-btn span {
+        display: none;
+    }
+    
+    .quick-share-btn {
+        padding: 0.5rem;
+    }
 }
 
 /* Tab contents */
@@ -1490,6 +1521,14 @@ th { background: var(--bg-main); font-weight: 700; color: var(--text-muted); }
     transform: translate(-50%, -100%) translateY(-15px);
 }
 
+#global-tooltip.tooltip-bottom {
+    transform: translate(-50%, 0) translateY(10px);
+}
+
+#global-tooltip.active.tooltip-bottom {
+    transform: translate(-50%, 0) translateY(15px);
+}
+
 #global-tooltip::after {
     content: '';
     position: absolute;
@@ -1498,6 +1537,13 @@ th { background: var(--bg-main); font-weight: 700; color: var(--text-muted); }
     transform: translateX(-50%);
     border: 6px solid transparent;
     border-top-color: var(--border-light);
+}
+
+#global-tooltip.tooltip-bottom::after {
+    top: auto;
+    bottom: 100%;
+    border-top-color: transparent;
+    border-bottom-color: var(--border-light);
 }
 
 [data-tooltip] {
