@@ -328,7 +328,7 @@ function loadSampleScenario() {
             frequency: 'monthly', 
             startDate: new Date().toISOString().split('T')[0], 
             endDate: null,
-            from: 'sample-3',
+            from: 'sample-1',
             createdAt: new Date().toISOString() 
         },
         { 
@@ -2986,13 +2986,14 @@ function updateAllocationChart() {
     
     const isDarkMode = true;
     const lastProj = projections && projections.length > 0 ? projections[projections.length - 1] : null;
+    const colorMap = getStableColorMap();
 
     if (validInvestments.length === 0) {
         ctx.style.display = 'none';
         if (assetList) assetList.innerHTML = '';
     } else {
         ctx.style.display = 'block';
-        const colors = generateInvestmentColors(validInvestments.length);
+        const colors = validInvestments.map(inv => colorMap[inv.id] || '#6366f1');
 
         charts.allocation = new Chart(ctx, {
             type: 'doughnut',
@@ -3056,12 +3057,13 @@ function updateAllocationChart() {
                     <span>Start</span>
                     <span>End</span>
                 </div>
-                ${validInvestments.map((inv, i) => {
+                ${validInvestments.map((inv) => {
                     const endBal = lastProj ? (lastProj.balances[inv.id] || 0) : 0;
+                    const color = colorMap[inv.id] || '#6366f1';
                     return `
                         <div class="allocation-list-item" onclick="editInvestment('${inv.id}')">
                             <div class="item-name">
-                                <span class="color-dot" style="background-color: ${colors[i]}"></span>
+                                <span class="color-dot" style="background-color: ${color}"></span>
                                 <span>${inv.name}</span>
                             </div>
                             <div class="item-start">$${formatNumber(inv.amount)}</div>
@@ -3076,12 +3078,7 @@ function updateAllocationChart() {
     // Handle Debt Section
     if (validDebts.length > 0 && debtCtx && debtSection) {
         debtSection.style.display = 'block';
-        const debtColors = validDebts.map((_, i) => {
-            const hue = 0; // Red/Pink for debt
-            const saturation = 70;
-            const lightness = 60 - (i * 8);
-            return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-        });
+        const debtColors = validDebts.map(inv => colorMap[inv.id] || '#ef4444');
 
         charts.debtAllocation = new Chart(debtCtx, {
             type: 'doughnut',
@@ -3145,12 +3142,13 @@ function updateAllocationChart() {
                     <span>Start</span>
                     <span>End</span>
                 </div>
-                ${validDebts.map((inv, i) => {
+                ${validDebts.map((inv) => {
                     const endBal = lastProj ? (lastProj.balances[inv.id] || 0) : 0;
+                    const color = colorMap[inv.id] || '#ef4444';
                     return `
                         <div class="allocation-list-item" onclick="editInvestment('${inv.id}')">
                             <div class="item-name">
-                                <span class="color-dot" style="background-color: ${debtColors[i]}"></span>
+                                <span class="color-dot" style="background-color: ${color}"></span>
                                 <span>${inv.name}</span>
                             </div>
                             <div class="item-start">$${formatNumber(inv.amount)}</div>
@@ -3259,12 +3257,8 @@ function updateNetWorthChart() {
     const isDarkMode = true;
     let datasets = [];
 
-    // Pre-calculate colors based on original investments order to keep them consistent
-    const originalColors = generateInvestmentColors(investments.length);
-    const colorMap = {};
-    investments.forEach((inv, idx) => {
-        colorMap[inv.id] = originalColors[idx];
-    });
+    // Unified stable color mapping across all charts
+    const colorMap = getStableColorMap();
 
     const assets = investments.filter(inv => inv.type !== 'Debt');
     const debts = investments.filter(inv => inv.type === 'Debt');
@@ -3283,7 +3277,7 @@ function updateNetWorthChart() {
             datasets.push({
                 label: inv.name,
                 data: data,
-                backgroundColor: color + '40',
+                backgroundColor: applyAlpha(color, 0.25),
                 borderColor: color,
                 borderWidth: 2,
                 fill: idx === 0 ? 'origin' : '-1',
@@ -3293,7 +3287,7 @@ function updateNetWorthChart() {
                 pointHoverBackgroundColor: color,
                 pointHoverBorderColor: '#fff',
                 pointHoverBorderWidth: 2,
-                order: 10 + idx, // Drawn before the Net Worth line
+                order: 10 + idx, // Assets in the middle
             });
         });
 
@@ -3310,7 +3304,7 @@ function updateNetWorthChart() {
             datasets.push({
                 label: inv.name,
                 data: data,
-                backgroundColor: color + '40',
+                backgroundColor: applyAlpha(color, 0.25),
                 borderColor: color,
                 borderWidth: 2,
                 fill: idx === 0 ? 'origin' : '-1',
@@ -3320,7 +3314,7 @@ function updateNetWorthChart() {
                 pointHoverBackgroundColor: color,
                 pointHoverBorderColor: '#fff',
                 pointHoverBorderWidth: 2,
-                order: 30 + idx, // Drawn before the Net Worth line
+                order: 30 + idx, // Debts in the middle
             });
         });
     } else {
@@ -3353,7 +3347,7 @@ function updateNetWorthChart() {
         tension: 0.4,
         pointRadius: 0,
         pointHoverRadius: 0,
-        order: 99, // Just below the real line
+        order: 3, // Drawn late (on top of volumes)
     });
 
     datasets.push({
@@ -3368,7 +3362,7 @@ function updateNetWorthChart() {
         pointHoverBackgroundColor: isDarkMode ? '#fff' : '#0f172a',
         pointHoverBorderColor: isDarkMode ? '#0f172a' : '#fff',
         pointHoverBorderWidth: 2,
-        order: 100, // On top of all volumes
+        order: 2, // Drawn late (on top of everything except goals/milestones)
     });
 
     // Add Baseline (non-stacked, just a line)
@@ -3383,7 +3377,7 @@ function updateNetWorthChart() {
             tension: 0.4,
             pointRadius: 0,
             pointHoverRadius: 4,
-            order: 5, // Below volumes but above origin-0 line
+            order: 50, // Drawn early (behind volumes)
         });
     }
 
@@ -3405,7 +3399,7 @@ function updateNetWorthChart() {
                 pointHoverRadius: 8,
                 pointStyle: 'star',
                 showLine: false,
-                order: 110, // Above Net Worth line
+                order: 1, // On top of Net Worth line
             });
         }
     }
@@ -3423,9 +3417,72 @@ function updateNetWorthChart() {
             pointHoverRadius: 9,
             pointStyle: 'rectRot',
             showLine: false,
-            order: 120, // Above everything
+            order: 0, // Very top
         });
     }
+
+    const lastPointLabel = {
+        id: 'lastPointLabel',
+        afterDraw: (chart) => {
+            // Hide indicator when user is hovering to avoid overlapping with tooltip
+            if (chart.getActiveElements()?.length > 0) return;
+
+            const { ctx, chartArea: { right }, scales: { y } } = chart;
+            const dataset = chart.data.datasets.find(d => d.label === 'Total Net Worth');
+            if (!dataset) return;
+
+            const meta = chart.getDatasetMeta(chart.data.datasets.indexOf(dataset));
+            const lastPoint = meta.data[meta.data.length - 1];
+            if (!lastPoint) return;
+
+            const value = dataset.data[dataset.data.length - 1];
+            const label = `$${formatNumber(value)}`;
+
+            // Draw background pill
+            const textWidth = ctx.measureText(label).width;
+            const pillPadding = 8;
+            const pillHeight = 24;
+            const totalPillWidth = textWidth + pillPadding * 2;
+            
+            ctx.save();
+            ctx.font = 'bold 12px Inter';
+            ctx.textBaseline = 'middle';
+            
+            // Position the pill so its bottom-right corner touches the last point
+            const pillX = lastPoint.x - totalPillWidth;
+            const pillY = lastPoint.y - pillHeight;
+            
+            // Draw background pill with a slight shadow for pop
+            ctx.shadowBlur = 4;
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.fillStyle = isDarkMode ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+            ctx.strokeStyle = '#6366f1';
+            ctx.lineWidth = 1.5;
+
+            // Rounded rect for the pill (Manual for compatibility)
+            const radius = 6;
+            ctx.beginPath();
+            ctx.moveTo(pillX + radius, pillY);
+            ctx.lineTo(pillX + totalPillWidth - radius, pillY);
+            ctx.quadraticCurveTo(pillX + totalPillWidth, pillY, pillX + totalPillWidth, pillY + radius);
+            ctx.lineTo(pillX + totalPillWidth, pillY + pillHeight - radius);
+            ctx.quadraticCurveTo(pillX + totalPillWidth, pillY + pillHeight, pillX + totalPillWidth - radius, pillY + pillHeight);
+            ctx.lineTo(pillX + radius, pillY + pillHeight);
+            ctx.quadraticCurveTo(pillX, pillY + pillHeight, pillX, pillY + pillHeight - radius);
+            ctx.lineTo(pillX, pillY + radius);
+            ctx.quadraticCurveTo(pillX, pillY, pillX + radius, pillY);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Draw text
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = isDarkMode ? '#f8fafc' : '#1e293b';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, pillX + totalPillWidth / 2, pillY + pillHeight / 2);
+            ctx.restore();
+        }
+    };
 
     charts.netWorth = new Chart(ctx, {
         type: 'line',
@@ -3433,11 +3490,12 @@ function updateNetWorthChart() {
             labels: projections.map(p => p.year),
             datasets: datasets
         },
+        plugins: [lastPointLabel],
         options: {
             responsive: true,
             maintainAspectRatio: false,
             layout: {
-                padding: { left: 0, right: 0, top: 10, bottom: 0 }
+                padding: { left: 0, right: 10, top: 10, bottom: 0 }
             },
             onHover: (event, chartElement) => {
                 const target = event.native.target;
@@ -3595,12 +3653,12 @@ function updateAllocationTimelineChart() {
         charts.allocationTimeline.destroy();
     }
 
-    const colors = generateInvestmentColors(investments.length);
-    const datasets = investments.map((inv, idx) => ({
+    const colorMap = getStableColorMap();
+    const datasets = investments.map((inv) => ({
         label: inv.name,
         data: projections.map(p => p.balances[inv.id] || 0),
-        backgroundColor: colors[idx],
-        borderColor: colors[idx],
+        backgroundColor: colorMap[inv.id] || '#6366f1',
+        borderColor: colorMap[inv.id] || '#6366f1',
         borderWidth: 0,
         borderRadius: 4
     }));
@@ -3909,6 +3967,55 @@ function showYearDetails(index) {
     }
     
     document.getElementById('projection-details-modal').style.display = 'flex';
+}
+
+function getStableColorMap() {
+    const colorMap = {};
+    const baseColors = [
+        '#6366f1', '#a855f7', '#3b82f6', '#2dd4bf', '#f43f5e', 
+        '#fb923c', '#10b981', '#f59e0b', '#ec4899', '#06b6d4',
+        '#8b5cf6', '#64b6ff', '#14b8a6'
+    ];
+    
+    // Sort investments to ensure stable index assignment (Assets first, then Debts)
+    const sortedInvestments = [...investments].sort((a, b) => {
+        if (a.type === 'Debt' && b.type !== 'Debt') return 1;
+        if (a.type !== 'Debt' && b.type === 'Debt') return -1;
+        return new Date(a.createdAt) - new Date(b.createdAt);
+    });
+
+    let assetIdx = 0;
+    let debtIdx = 0;
+    
+    sortedInvestments.forEach(inv => {
+        if (inv.type === 'Debt') {
+            const hue = 0; // Red for debt
+            const saturation = 55; // Reduced from 70
+            const lightness = 45 - (debtIdx * 8); // Darker starting point (45 instead of 60)
+            colorMap[inv.id] = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+            debtIdx++;
+        } else {
+            colorMap[inv.id] = baseColors[assetIdx % baseColors.length];
+            assetIdx++;
+        }
+    });
+    
+    return colorMap;
+}
+
+function applyAlpha(color, alpha) {
+    if (color.startsWith('#')) {
+        // Hex to RGBA
+        const hex = color.replace('#', '');
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    } else if (color.startsWith('hsl')) {
+        // HSL to HSLA
+        return color.replace('hsl', 'hsla').replace(')', `, ${alpha})`);
+    }
+    return color;
 }
 
 function generateInvestmentColors(count) {
