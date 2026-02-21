@@ -67,7 +67,7 @@ To provide a fast, privacy-focused, and visual way for users to project their fi
 - **Probabilistic Modeling**: Box-Muller transform for Gaussian random distribution in Monte Carlo simulations.
 
 ## 4. Testing Coverage
-The application is verified by a custom integration test suite (`simple-tests.js`) covering over 2,500 scenarios, including:
+The application is verified by a custom integration test suite (`testing/simple-tests.js`) covering over 3,500 scenarios, including:
 - Persona lifecycles (500 tests)
 - Debt & interest dynamics (200 tests)
 - Economic sensitivity (250 tests)

@@ -1,0 +1,13 @@
+# Testing artifacts
+testing/
+
+# Local configuration and logs
+*.log
+*.tmp
+.DS_Store
+
+# Version control artifacts
+.git/
+node_modules/
+dist/
+build/

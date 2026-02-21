@@ -27,4 +27,4 @@ A fast, privacy-focused financial projection tool built with vanilla JavaScript 
 - [Calculation Engine (Internal)](script.js)
 
 ## Testing
-The application includes a comprehensive integration test suite (`simple-tests.js`) that verifies over 2,500 financial scenarios. To run tests, open `simple-test-runner.html` in your browser.
+The application includes a comprehensive integration test suite (`testing/simple-tests.js`) that verifies over 3,500 financial scenarios. To run tests, open `testing/simple-test-runner.html` in your browser.

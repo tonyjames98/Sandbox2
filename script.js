@@ -1,4 +1,4 @@
-function handleValueTypeChange(prefix) {
+function handleValueTypeChange(prefix, skipValueUpdate = false) {
     const typeSelect = document.getElementById(prefix === 'unified' ? 'event-amount-type' : `${prefix}-type`);
     const amountInput = document.getElementById(prefix === 'unified' ? 'event-amount' : `${prefix}-amount`);
     const wrapper = document.getElementById('event-amount-wrapper');
@@ -7,11 +7,17 @@ function handleValueTypeChange(prefix) {
 
     const isRecurring = document.getElementById('event-is-recurring')?.checked;
 
-    // Update value defaults
-    if (typeSelect.value === 'percent') {
-        amountInput.value = '4';
-    } else {
-        amountInput.value = isRecurring ? '500' : '1000';
+    // Update value defaults only if not skipping
+    if (!skipValueUpdate) {
+        if (typeSelect.value === 'percent') {
+            amountInput.value = '4';
+        } else {
+            amountInput.value = isRecurring ? '500' : '1000';
+        }
+        
+        // Sync slider
+        const amountSlider = document.getElementById('event-amount-slider');
+        if (amountSlider) amountSlider.value = amountInput.value;
     }
 
     // Update UI symbols
@@ -1460,6 +1466,12 @@ function editInvestment(id) {
     document.getElementById('investment-amount').value = investment.amount;
     document.getElementById('investment-return').value = investment.returnRate;
     
+    // Sync sliders
+    const amountSlider = document.getElementById('investment-amount-slider');
+    const returnSlider = document.getElementById('investment-return-slider');
+    if (amountSlider) amountSlider.value = investment.amount;
+    if (returnSlider) returnSlider.value = investment.returnRate;
+
     // Debt fields
     const isDebt = investment.type === 'Debt';
     const debtFields = document.getElementById('debt-fields');
@@ -1470,6 +1482,9 @@ function editInvestment(id) {
         document.getElementById('debt-funding-source').value = investment.fundingSource || 'proportional';
         document.getElementById('investment-amount-label').textContent = 'Total Debt Amount ($)';
         document.getElementById('investment-return-label').textContent = 'Interest Rate (%)';
+        
+        const debtSlider = document.getElementById('debt-payment-slider');
+        if (debtSlider) debtSlider.value = investment.monthlyPayment || 0;
     } else {
         document.getElementById('investment-amount-label').textContent = 'Initial Amount ($)';
         document.getElementById('investment-return-label').textContent = 'Return Rate (%)';
@@ -1686,11 +1701,18 @@ function showAddEventModal(type) {
 function editEvent(id) {
     const event = events.find(evt => evt.id === id);
     if (!event) return;
+    
     document.getElementById('event-modal').style.display = 'flex';
     document.getElementById('event-form').reset();
+    
+    // Set basic type info
     document.getElementById('event-type').value = event.type;
+    document.getElementById('event-is-recurring').checked = !!event.isRecurring;
+    
+    // Update visibility based on type/recurring
     updateEventForm();
     updateEventFormOptions();
+    
     document.getElementById('event-form').setAttribute('data-edit-id', id);
     
     // Update button text to "Update Event"
@@ -1699,68 +1721,42 @@ function editEvent(id) {
         submitBtn.textContent = 'Update Event';
     }
     
-    switch (event.type) {
-        case 'rebalancing':
-            document.getElementById('rebalancing-frequency').value = event.frequency;
-            break;
-        case 'transfer':
-            document.getElementById('transfer-date').value = event.date;
-            document.getElementById('transfer-type').value = event.amountType || 'fixed';
-            document.getElementById('transfer-amount').value = event.amount;
-            document.getElementById('transfer-from').value = event.from;
-            document.getElementById('transfer-to').value = event.to;
-            break;
-        case 'cash-withdrawal':
-            document.getElementById('cash-withdrawal-date').value = event.date;
-            document.getElementById('cash-withdrawal-type').value = event.amountType || 'fixed';
-            document.getElementById('cash-withdrawal-amount').value = event.amount;
-            document.getElementById('cash-withdrawal-source').value = event.from;
-            document.getElementById('cash-withdrawal-description').value = event.description || '';
-            break;
-        case 'recurring-withdrawal':
-            document.getElementById('recurring-withdrawal-type').value = event.amountType || 'fixed';
-            document.getElementById('recurring-withdrawal-amount').value = event.amount;
-            document.getElementById('recurring-withdrawal-frequency').value = event.frequency;
-            document.getElementById('recurring-withdrawal-start').value = event.startDate;
-            document.getElementById('recurring-withdrawal-end').value = event.endDate || '';
-            document.getElementById('recurring-withdrawal-source').value = event.from;
-            document.getElementById('recurring-withdrawal-description').value = event.description || '';
-            break;
-        case 'withdrawal':
-            document.getElementById('withdrawal-date').value = event.date;
-            document.getElementById('withdrawal-amount-type').value = event.amountType || 'fixed';
-            document.getElementById('withdrawal-amount').value = event.amount;
-            document.getElementById('withdrawal-source').value = event.from;
-            document.getElementById('withdrawal-description').value = event.description || '';
-            break;
-        case 'expense':
-            document.getElementById('expense-date').value = event.date;
-            document.getElementById('expense-amount').value = event.amount;
-            document.getElementById('expense-description').value = event.description;
-            document.getElementById('expense-source').value = event.from;
-            break;
-        case 'recurring':
-            document.getElementById('recurring-amount').value = event.amount;
-            document.getElementById('recurring-frequency').value = event.frequency;
-            document.getElementById('recurring-start').value = event.startDate;
-            document.getElementById('recurring-end').value = event.endDate || '';
-            document.getElementById('recurring-source').value = event.from;
-            document.getElementById('recurring-description').value = event.description || '';
-            break;
-        case 'income':
-            document.getElementById('income-date').value = event.date;
-            document.getElementById('income-amount').value = event.amount;
-            document.getElementById('income-description').value = event.description;
-            document.getElementById('income-target').value = event.to;
-            break;
-        case 'recurring-income':
-            document.getElementById('recurring-income-amount').value = event.amount;
-            document.getElementById('recurring-income-frequency').value = event.frequency;
-            document.getElementById('recurring-income-start').value = event.startDate;
-            document.getElementById('recurring-income-end').value = event.endDate || '';
-            document.getElementById('recurring-income-target').value = event.to;
-            document.getElementById('recurring-income-description').value = event.description || '';
-            break;
+    // Common fields
+    document.getElementById('event-description').value = event.description || '';
+    document.getElementById('event-amount').value = event.amount || 0;
+    document.getElementById('event-amount-type').value = event.amountType || 'fixed';
+    
+    // Sync slider
+    const amountSlider = document.getElementById('event-amount-slider');
+    if (amountSlider) amountSlider.value = event.amount || 0;
+
+    // Type-specific field mapping
+    if (event.isRecurring) {
+        document.getElementById('event-frequency').value = event.frequency || 'annually';
+        document.getElementById('event-start-date').value = event.startDate || '';
+        document.getElementById('event-end-date').value = event.endDate || '';
+    } else {
+        document.getElementById('event-date').value = event.date || '';
+    }
+
+    // Source/Target mapping
+    const sourceSelect = document.getElementById('event-source');
+    const targetSelect = document.getElementById('event-target');
+    
+    if (sourceSelect) sourceSelect.value = event.from || '';
+    if (targetSelect) targetSelect.value = event.to || '';
+
+    // Specialized Withdrawal Destination
+    if (event.type === 'withdrawal') {
+        const destSelect = document.getElementById('withdrawal-destination');
+        if (destSelect) {
+            destSelect.value = (event.to === 'external') ? 'external' : 'cash';
+        }
+    }
+
+    // Re-trigger symbol logic (skip value overwrite during edit)
+    if (typeof handleValueTypeChange === 'function') {
+        handleValueTypeChange('unified', true);
     }
 }
 
