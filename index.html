@@ -57,6 +57,10 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="db-sync.js" defer></script>
+    <script src="auth.js" defer></script>
     
     <!-- Structured Data for SEO -->
     <script type="application/ld+json">
@@ -141,6 +145,21 @@
                     <i data-lucide="bot"></i>
                     <span>AI Analysis</span>
                 </button>
+
+                <!-- Auth Integration in Sidebar -->
+                <div class="sidebar-auth-section" id="sidebar-auth-section">
+                    <button class="nav-item" id="sidebar-login-btn" onclick="showAuthModal('login')">
+                        <i data-lucide="log-in"></i>
+                        <span>Login / Sign Up</span>
+                    </button>
+                    <div id="sidebar-profile-btn" class="nav-item profile-info" style="display: none;">
+                        <i data-lucide="user"></i>
+                        <span id="user-email-display">user@example.com</span>
+                        <button class="btn-icon btn-logout" onclick="logout()" title="Logout">
+                            <i data-lucide="log-out"></i>
+                        </button>
+                    </div>
+                </div>
             </nav>
             
             <div class="sidebar-footer">
@@ -1180,6 +1199,50 @@
     <div id="toast-container"></div>
     <div id="global-tooltip"></div>
     <input type="file" id="import-file" style="display:none">
+
+    <!-- Auth Modal -->
+    <div class="modal auth-modal" id="auth-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="auth-modal-title">Welcome to My Projection</h3>
+                <button class="close-btn" onclick="closeModal('auth-modal')"><i data-lucide="x"></i></button>
+            </div>
+            
+            <div id="login-section">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="login-email" required placeholder="name@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="login-password" required placeholder="••••••••">
+                    </div>
+                    <div class="modal-footer">
+                        <p class="auth-switch-text">Don't have an account? <a href="#" onclick="switchAuthView('signup')">Sign Up</a></p>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="signup-section" style="display: none;">
+                <form id="signup-form">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="signup-email" required placeholder="name@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="signup-password" required placeholder="Minimum 6 characters">
+                    </div>
+                    <div class="modal-footer">
+                        <p class="auth-switch-text">Already have an account? <a href="#" onclick="switchAuthView('login')">Login</a></p>
+                        <button type="submit" class="btn btn-primary">Create Account</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
     <script>

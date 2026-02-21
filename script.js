@@ -1092,47 +1092,51 @@ function loadData() {
 
 function resetAllData() {
     if (confirm('Are you sure you want to reset all data? This cannot be undone.')) {
-        investments = [];
-        events = [];
-        goals = [];
-        projections = [];
-        baselineProjections = null;
-        baselineInvestments = null;
-        baselineEvents = null;
-        baselineGoals = null;
-        
-        // Reset UI
-        const scenarioControls = document.getElementById('scenario-controls');
-        const saveBaselineBtn = document.getElementById('save-baseline-btn');
-        if (scenarioControls) scenarioControls.style.display = 'none';
-        if (saveBaselineBtn) saveBaselineBtn.style.display = 'inline-flex';
-        
-        localStorage.removeItem('financeProjectionData');
-        localStorage.removeItem('lastProjection');
-        localStorage.removeItem('warning-dismissed'); // Reset warning banner state
-        localStorage.removeItem('hasRunProjection'); // Reset guide state
-        
-        // Clear all goals too
-        goals = [];
-        localStorage.removeItem('financeGoalsData');
-        
-        // Update UI immediately
-        updateDashboard();
-        renderInvestments();
-        renderEvents();
-        renderGoals();
-        resetWhatIfSliders();
-        
-        // Run projection with empty data to clear charts
-        if (document.getElementById('dashboard').classList.contains('active')) {
-            runProjection();
-        }
-        
-        // Refresh the guide state
-        updateOnboardingGuide();
-        
-        alert('All data has been reset.');
+        resetAllDataNoConfirm();
     }
+}
+
+function resetAllDataNoConfirm() {
+    investments = [];
+    events = [];
+    goals = [];
+    projections = [];
+    baselineProjections = null;
+    baselineInvestments = null;
+    baselineEvents = null;
+    baselineGoals = null;
+    
+    // Reset UI
+    const scenarioControls = document.getElementById('scenario-controls');
+    const saveBaselineBtn = document.getElementById('save-baseline-btn');
+    if (scenarioControls) scenarioControls.style.display = 'none';
+    if (saveBaselineBtn) saveBaselineBtn.style.display = 'inline-flex';
+    
+    localStorage.removeItem('financeProjectionData');
+    localStorage.removeItem('lastProjection');
+    localStorage.removeItem('warning-dismissed'); // Reset warning banner state
+    localStorage.removeItem('hasRunProjection'); // Reset guide state
+    
+    // Clear all goals too
+    goals = [];
+    localStorage.removeItem('financeGoalsData');
+    
+    // Update UI immediately
+    updateDashboard();
+    renderInvestments();
+    renderEvents();
+    renderGoals();
+    displayPortfolioInsights();
+    
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    
+    // Run projection with empty data to clear charts
+    if (document.getElementById('dashboard').classList.contains('active')) {
+        runProjection();
+    }
+
+    // Refresh the guide state
+    updateOnboardingGuide();
 }
 
 // Event Listeners
@@ -3711,6 +3715,7 @@ function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.style.display = 'none';
+        modal.classList.remove('active');
         modal.setAttribute('aria-hidden', 'true');
         
         if (modalId === 'event-modal') {
