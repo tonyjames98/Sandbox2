@@ -23,6 +23,7 @@ To provide a fast, privacy-focused, and visual way for users to project their fi
 
 ### 2.3 Projection Engine
 - **Net Worth Calculation**: Real-time projection of net worth over 1 to 60 years.
+- **Goal Bridge Advice**: Actionable advice for goals that are "Off Track," calculating the exact additional monthly savings needed to reach the target based on expected asset returns.
 - **Automatic Updates**: Real-time re-calculation of projections when years or any data point is modified.
 - **Inflation Adjustment**: Option to discount future values to "today's dollars" using a custom inflation rate.
 - **What-If Scenarios**: Real-time interactive sliders for market performance offsets and monthly savings boosts/expenses.
@@ -85,3 +86,4 @@ The application is verified by a custom integration test suite (`testing/simple-
 - UX features & Tooltips (150 tests)
 - Monte Carlo Probability (150 tests)
 - Form Polish & Symbols (80 tests)
+- Goal Bridge Calculations (50 tests)
