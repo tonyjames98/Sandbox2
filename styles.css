@@ -66,6 +66,7 @@
     background: var(--border-focus);
     color: white;
     padding: 4px 12px;
+    padding-right: 28px; /* Room for close button */
     border-radius: 20px;
     font-size: 0.7rem;
     font-weight: 800;
@@ -74,8 +75,37 @@
     white-space: nowrap;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     z-index: 100;
-    pointer-events: none;
+    pointer-events: auto; /* Enable interaction for close button */
     animation: tipBounce 2s infinite;
+    display: flex;
+    align-items: center;
+}
+
+.tip-close {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1;
+    padding: 0;
+    padding-bottom: 1px;
+}
+
+.tip-close:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: translateY(-50%) scale(1.1);
 }
 
 .onboarding-tip::after {
@@ -852,6 +882,29 @@ input:checked + .slider:before {
     align-items: center;
 }
 
+.slider-label-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+@media (max-width: 480px) {
+    .slider-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .slider-label-group {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .slider-info span {
+        align-self: flex-end;
+    }
+}
+
 .slider-info label {
     font-size: 0.8125rem;
     font-weight: 600;
@@ -866,32 +919,31 @@ input:checked + .slider:before {
 }
 
 /* What-If Sliders */
-.slider-with-target {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin: 0.25rem 0;
-}
-
-.slider-with-target input[type="range"] {
-    flex: 1;
-}
-
 .boost-target-select {
-    width: 120px;
-    padding: 0.2rem 0.4rem;
-    font-size: 0.75rem;
-    font-weight: 500;
+    width: auto;
+    max-width: 140px;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
     border: 1px solid var(--border-light);
     border-radius: var(--radius-sm);
     background: var(--bg-main);
-    color: var(--text-main);
+    color: var(--text-muted);
     cursor: pointer;
+    transition: all 0.2s;
+}
+
+.boost-target-select:hover {
+    color: var(--text-main);
+    border-color: var(--border-focus);
 }
 
 .boost-target-select:focus {
     outline: none;
-    border-color: var(--primary);
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
 }
 
 .slider-labels {
@@ -900,6 +952,7 @@ input:checked + .slider:before {
     font-size: 0.7rem;
     color: var(--text-muted);
     font-weight: 500;
+    padding: 0 4px;
 }
 
 input[type="range"] {

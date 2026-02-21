@@ -51,7 +51,7 @@ To provide a fast, privacy-focused, and visual way for users to project their fi
 - **Global Tooltips**: Context-sensitive guidance for every major feature, managed via a global portal to prevent clipping.
 
 ### 2.6 UX Features
-- **3-Step Guided Onboarding**: Step-by-step guidance tips (Step 1: Add Assets/Debt -> Step 2: Add Events -> Step 3: Set Timeframe).
+- **3-Step Guided Onboarding**: Step-by-step guidance tips (Step 1: Add Assets/Debt -> Step 2: Add Events -> Step 3: Set Timeframe). Tips can be dismissed/disabled using the "×" button.
 - **Keyboard Shortcuts**: `Alt+A` (New Asset), `Ctrl+E` (New Event), `Ctrl+G` (New Goal), `Esc` (Close Modals/Tooltips).
 - **Toast Notifications**: Modern animated feedback for user actions (Save, Delete, Errors) with status icons.
 - **AI Integration**: One-click prompt generator for advanced analysis in external AI tools (like ChatGPT).

@@ -130,6 +130,22 @@ function initTooltips() {
 }
 
 // Onboarding Guide Logic
+function disableOnboarding(e) {
+    if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+    }
+    localStorage.setItem('onboardingDisabled', 'true');
+    updateOnboardingGuide();
+    showToast('Onboarding guide disabled. You can re-enable it anytime in the Guide tab.', 'info');
+}
+
+function enableOnboarding() {
+    localStorage.removeItem('onboardingDisabled');
+    updateOnboardingGuide();
+    showToast('Onboarding guide re-enabled!', 'success');
+}
+
 function updateOnboardingGuide() {
     const totalNetWorth = investments.reduce((sum, inv) => sum + inv.amount, 0);
     const netWorthCard = document.querySelector('.kpi-card.primary');
@@ -139,6 +155,8 @@ function updateOnboardingGuide() {
     const eventsCard = document.getElementById('guide-events-card');
     const sampleContainer = document.getElementById('onboarding-sample-container');
     
+    const onboardingDisabled = localStorage.getItem('onboardingDisabled') === 'true';
+    
     // Clear existing pulse/glow/tips
     document.querySelectorAll('.onboarding-tip').forEach(tip => tip.remove());
     netWorthCard?.classList.remove('guide-glow');
@@ -147,12 +165,17 @@ function updateOnboardingGuide() {
     yearsControl?.classList.remove('guide-glow');
     eventsCard?.classList.remove('guide-glow');
     
+    if (onboardingDisabled) {
+        if (sampleContainer) sampleContainer.style.display = 'none';
+        return;
+    }
+    
     // Helper to add a tip
     const addTip = (parent, text) => {
         if (!parent) return;
         const tip = document.createElement('div');
         tip.className = 'onboarding-tip';
-        tip.textContent = text;
+        tip.innerHTML = `<span>${text}</span><button class="tip-close" onclick="disableOnboarding(event)" title="Hide all onboarding tips">×</button>`;
         parent.appendChild(tip);
     };
 

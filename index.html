@@ -306,14 +306,14 @@
                                     </div>
                                     <div class="slider-group">
                                         <div class="slider-info">
-                                            <label>Monthly Boost/Expense</label>
+                                            <div class="slider-label-group">
+                                                <label>Monthly Boost/Expense</label>
+                                                <select id="savings-boost-target" class="boost-target-select" onchange="updateWhatIf()" title="Target account for this boost/expense">
+                                                </select>
+                                            </div>
                                             <span id="savings-boost-val">$0</span>
                                         </div>
-                                        <div class="slider-with-target">
-                                            <input type="range" id="savings-boost-slider" min="-10000" max="10000" step="100" value="0" oninput="updateWhatIf()">
-                                            <select id="savings-boost-target" class="boost-target-select" onchange="updateWhatIf()" title="Target account for this boost/expense">
-                                            </select>
-                                        </div>
+                                        <input type="range" id="savings-boost-slider" min="-10000" max="10000" step="100" value="0" oninput="updateWhatIf()">
                                         <div class="slider-labels">
                                             <span>-$10k</span>
                                             <span>$0</span>
@@ -799,6 +799,12 @@
                             <i data-lucide="command"></i>
                             <h3>Hotkeys & Privacy</h3>
                             <p><strong>Alt + A</strong>: New Asset<br><strong>Ctrl + E</strong>: New Event<br><strong>Ctrl + G</strong>: New Goal<br><strong>Esc</strong>: Close Modal<br><br>Your data <strong>never leaves your device</strong>.</p>
+                        </div>
+                        <div class="card guide-card">
+                            <i data-lucide="info"></i>
+                            <h3>Onboarding Guide</h3>
+                            <p>Need a refresher on how to use the app? You can re-enable the step-by-step onboarding tips and highlights here.</p>
+                            <button class="btn btn-outline btn-sm" style="margin-top: 1rem;" onclick="enableOnboarding()">Enable Onboarding Tips</button>
                         </div>
                     </div>
                 </div>
