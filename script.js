@@ -3450,7 +3450,12 @@ function updateNetWorthChart() {
             
             // Position the pill so its bottom-right corner touches the last point
             const pillX = lastPoint.x - totalPillWidth;
-            const pillY = lastPoint.y - pillHeight;
+            let pillY = lastPoint.y - pillHeight;
+            
+            // Boundary check: ensure pill doesn't get cut off at the top of the chart
+            if (pillY < 4) {
+                pillY = 4;
+            }
             
             // Draw background pill with a slight shadow for pop
             ctx.shadowBlur = 4;
