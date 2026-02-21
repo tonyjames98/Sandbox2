@@ -2996,6 +2996,9 @@ function updateAllocationChart() {
             responsive: true,
             maintainAspectRatio: false,
             cutout: '70%',
+            onHover: (event, chartElement) => {
+                event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+            },
             onClick: (e, elements) => {
                 if (elements.length > 0) {
                     const index = elements[0].index;
@@ -3006,6 +3009,17 @@ function updateAllocationChart() {
             plugins: {
                 legend: {
                     position: 'bottom',
+                    onHover: (e) => {
+                        e.native.target.style.cursor = 'pointer';
+                    },
+                    onLeave: (e) => {
+                        e.native.target.style.cursor = 'default';
+                    },
+                    onClick: (e, legendItem, legend) => {
+                        const index = legendItem.index;
+                        const investment = validInvestments[index];
+                        if (investment) editInvestment(investment.id);
+                    },
                     labels: {
                         color: isDarkMode ? '#94a3b8' : '#64748b',
                         padding: 15,
@@ -3293,6 +3307,18 @@ function updateNetWorthChart() {
             layout: {
                 padding: { left: 0, right: 0, top: 10, bottom: 0 }
             },
+            onHover: (event, chartElement) => {
+                const target = event.native.target;
+                if (chartElement.length > 0) {
+                    const datasetIndex = chartElement[0].datasetIndex;
+                    const dataset = datasets[datasetIndex];
+                    if (dataset && !['Baseline Net Worth', 'Goals', 'Milestones'].includes(dataset.label)) {
+                        target.style.cursor = 'pointer';
+                        return;
+                    }
+                }
+                target.style.cursor = 'default';
+            },
             onClick: (e, elements) => {
                 if (elements.length > 0) {
                     const datasetIndex = elements[0].datasetIndex;
@@ -3311,6 +3337,25 @@ function updateNetWorthChart() {
                 legend: {
                     display: investments.length > 0,
                     position: 'bottom',
+                    onHover: (e, legendItem, legend) => {
+                        const dataset = legend.chart.data.datasets[legendItem.datasetIndex];
+                        if (dataset && !['Baseline Net Worth', 'Goals', 'Milestones'].includes(dataset.label)) {
+                            e.native.target.style.cursor = 'pointer';
+                        } else {
+                            e.native.target.style.cursor = 'default';
+                        }
+                    },
+                    onLeave: (e) => {
+                        e.native.target.style.cursor = 'default';
+                    },
+                    onClick: (e, legendItem, legend) => {
+                        const index = legendItem.datasetIndex;
+                        const dataset = legend.chart.data.datasets[index];
+                        if (dataset && !['Baseline Net Worth', 'Goals', 'Milestones'].includes(dataset.label)) {
+                            const investment = investments.find(inv => inv.name === dataset.label);
+                            if (investment) editInvestment(investment.id);
+                        }
+                    },
                     labels: {
                         color: isDarkMode ? '#94a3b8' : '#64748b',
                         padding: 15,
@@ -3439,6 +3484,9 @@ function updateAllocationTimelineChart() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            onHover: (event, chartElement) => {
+                event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+            },
             onClick: (e, elements) => {
                 if (elements.length > 0) {
                     const datasetIndex = elements[0].datasetIndex;
@@ -3449,6 +3497,17 @@ function updateAllocationTimelineChart() {
             plugins: {
                 legend: {
                     position: 'bottom',
+                    onHover: (e) => {
+                        e.native.target.style.cursor = 'pointer';
+                    },
+                    onLeave: (e) => {
+                        e.native.target.style.cursor = 'default';
+                    },
+                    onClick: (e, legendItem, legend) => {
+                        const index = legendItem.datasetIndex;
+                        const investment = investments[index];
+                        if (investment) editInvestment(investment.id);
+                    },
                     labels: {
                         color: isDarkMode ? '#94a3b8' : '#64748b',
                         padding: 20,
