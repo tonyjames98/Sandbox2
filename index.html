@@ -123,7 +123,7 @@
                 </button>
                 <button class="nav-item" data-tab="events">
                     <i data-lucide="calendar"></i>
-                    <span>Add Income/Events</span>
+                    <span>Add Income/Withdrawal</span>
                 </button>
                 <button class="nav-item" data-tab="goals">
                     <i data-lucide="target"></i>
@@ -437,12 +437,8 @@
                 <!-- Events Tab -->
                 <div class="tab-content" id="events">
                     <div class="content-header">
-                        <h2>Add Income & Events</h2>
+                        <h2>Add Income & Withdrawal</h2>
                         <div class="header-actions">
-                            <button class="btn btn-outline" onclick="showAddEventModal('rebalancing')">
-                                <i data-lucide="refresh-cw"></i>
-                                <span>Rebalancing</span>
-                            </button>
                             <button class="btn btn-primary" onclick="showAddEventModal('expense')">
                                 <i data-lucide="plus"></i>
                                 <span>Add Event</span>
@@ -465,6 +461,10 @@
                         <button class="action-card withdrawal" onclick="showAddEventModal('withdrawal')">
                             <div class="action-icon"><i data-lucide="wallet"></i></div>
                             <div class="action-label">Withdrawal</div>
+                        </button>
+                        <button class="action-card rebalancing" onclick="showAddEventModal('rebalancing')">
+                            <div class="action-icon"><i data-lucide="refresh-cw"></i></div>
+                            <div class="action-label">Rebalancing</div>
                         </button>
                     </div>
                     <div class="events-list" id="events-list">
@@ -887,7 +887,7 @@
         </button>
         <button class="bottom-nav-item" data-tab="events">
             <i data-lucide="calendar"></i>
-            <span>Add Income/Events</span>
+            <span>Add Income/Withdrawal</span>
         </button>
         <button class="bottom-nav-item" data-tab="goals">
             <i data-lucide="target"></i>

@@ -1105,6 +1105,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .action-card.expense .action-icon { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
 .action-card.transfer .action-icon { background: rgba(59, 130, 246, 0.1); color: var(--info); }
 .action-card.withdrawal .action-icon { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+.action-card.rebalancing .action-icon { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
 
 .action-card:hover .action-icon {
     transform: scale(1.1);
