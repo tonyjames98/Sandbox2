@@ -2967,87 +2967,149 @@ function updateProjectionPeriod(years) {
 
 function updateAllocationChart() {
     const ctx = document.getElementById('allocation-chart');
+    const debtCtx = document.getElementById('debt-allocation-chart');
+    const debtSection = document.getElementById('debt-allocation-section');
     if (!ctx) return;
 
     if (charts.allocation) {
         charts.allocation.destroy();
     }
-
-    const validInvestments = investments.filter(inv => inv.amount > 0 && inv.type !== 'Debt');
-    
-    if (validInvestments.length === 0) {
-        ctx.style.display = 'none';
-        return;
+    if (charts.debtAllocation) {
+        charts.debtAllocation.destroy();
     }
 
-    ctx.style.display = 'block';
-    const colors = generateInvestmentColors(validInvestments.length);
+    const validInvestments = investments.filter(inv => inv.amount > 0 && inv.type !== 'Debt');
+    const validDebts = investments.filter(inv => inv.type === 'Debt' && inv.amount > 0);
+    
     const isDarkMode = true;
 
-    charts.allocation = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: validInvestments.map(inv => inv.name),
-            datasets: [{
-                data: validInvestments.map(inv => inv.amount),
-                backgroundColor: colors,
-                borderWidth: 0,
-                hoverOffset: 10
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '70%',
-            onHover: (event, chartElement) => {
-                event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+    if (validInvestments.length === 0) {
+        ctx.style.display = 'none';
+    } else {
+        ctx.style.display = 'block';
+        const colors = generateInvestmentColors(validInvestments.length);
+
+        charts.allocation = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: validInvestments.map(inv => inv.name),
+                datasets: [{
+                    data: validInvestments.map(inv => inv.amount),
+                    backgroundColor: colors,
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
             },
-            onClick: (e, elements) => {
-                if (elements.length > 0) {
-                    const index = elements[0].index;
-                    const investment = validInvestments[index];
-                    if (investment) editInvestment(investment.id);
-                }
-            },
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    onHover: (e) => {
-                        e.native.target.style.cursor = 'pointer';
-                    },
-                    onLeave: (e) => {
-                        e.native.target.style.cursor = 'default';
-                    },
-                    onClick: (e, legendItem, legend) => {
-                        const index = legendItem.index;
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                onHover: (event, chartElement) => {
+                    event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+                },
+                onClick: (e, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
                         const investment = validInvestments[index];
                         if (investment) editInvestment(investment.id);
-                    },
-                    labels: {
-                        color: isDarkMode ? '#94a3b8' : '#64748b',
-                        padding: 15,
-                        usePointStyle: true,
-                        font: { family: 'Inter', weight: 500, size: 11 }
                     }
                 },
-                tooltip: {
-                    backgroundColor: isDarkMode ? '#1e293b' : '#fff',
-                    titleColor: isDarkMode ? '#f8fafc' : '#1e293b',
-                    bodyColor: isDarkMode ? '#94a3b8' : '#64748b',
-                    borderColor: isDarkMode ? '#334155' : '#e2e8f0',
-                    borderWidth: 1,
-                    padding: 12,
-                    callbacks: {
-                        label: function(context) {
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percent = ((context.raw / total) * 100).toFixed(1);
-                            return ` ${context.label}: $${formatNumber(context.raw)} (${percent}%)`;
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: isDarkMode ? '#94a3b8' : '#64748b',
+                            padding: 15,
+                            usePointStyle: true,
+                            font: { family: 'Inter', weight: 500, size: 11 }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: isDarkMode ? '#1e293b' : '#fff',
+                        titleColor: isDarkMode ? '#f8fafc' : '#1e293b',
+                        bodyColor: isDarkMode ? '#94a3b8' : '#64748b',
+                        borderColor: isDarkMode ? '#334155' : '#e2e8f0',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percent = ((context.raw / total) * 100).toFixed(1);
+                                return ` ${context.label}: $${formatNumber(context.raw)} (${percent}%)`;
+                            }
                         }
                     }
                 }
             }
-        }
-    });
+        });
+    }
+
+    // Handle Debt Section
+    if (validDebts.length > 0 && debtCtx && debtSection) {
+        debtSection.style.display = 'block';
+        const debtColors = validDebts.map((_, i) => {
+            const hue = 0; // Red/Pink for debt
+            const saturation = 70;
+            const lightness = 60 - (i * 8);
+            return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+        });
+
+        charts.debtAllocation = new Chart(debtCtx, {
+            type: 'doughnut',
+            data: {
+                labels: validDebts.map(inv => inv.name),
+                datasets: [{
+                    data: validDebts.map(inv => inv.amount),
+                    backgroundColor: debtColors,
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                onHover: (event, chartElement) => {
+                    event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+                },
+                onClick: (e, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
+                        const debt = validDebts[index];
+                        if (debt) editInvestment(debt.id);
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: isDarkMode ? '#94a3b8' : '#64748b',
+                            padding: 15,
+                            usePointStyle: true,
+                            font: { family: 'Inter', weight: 500, size: 11 }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: isDarkMode ? '#1e293b' : '#fff',
+                        titleColor: isDarkMode ? '#f8fafc' : '#1e293b',
+                        bodyColor: isDarkMode ? '#94a3b8' : '#64748b',
+                        borderColor: isDarkMode ? '#334155' : '#e2e8f0',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percent = ((context.raw / total) * 100).toFixed(1);
+                                return ` ${context.label}: $${formatNumber(context.raw)} (${percent}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    } else if (debtSection) {
+        debtSection.style.display = 'none';
+    }
 }
 
 // Projection Charts
@@ -3227,17 +3289,30 @@ function updateNetWorthChart() {
     }
 
     // Add Total Net Worth Line (Distinct solid line on top of volumes)
+    // Shadow line for glow/visibility
     datasets.push({
-        label: 'Total Net Worth',
+        label: 'Net Worth Shadow',
         data: projections.map(p => p.totalNetWorth),
-        borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(30, 41, 59, 0.9)',
-        borderWidth: 3,
+        borderColor: isDarkMode ? 'rgba(99, 102, 241, 0.3)' : 'rgba(0, 0, 0, 0.1)',
+        borderWidth: 8,
         fill: false,
         tension: 0.4,
         pointRadius: 0,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: isDarkMode ? '#fff' : '#1e293b',
-        pointHoverBorderColor: isDarkMode ? '#1e293b' : '#fff',
+        pointHoverRadius: 0,
+        order: 99, // Just below the real line
+    });
+
+    datasets.push({
+        label: 'Total Net Worth',
+        data: projections.map(p => p.totalNetWorth),
+        borderColor: isDarkMode ? 'rgba(255, 255, 255, 1)' : 'rgba(15, 23, 42, 1)',
+        borderWidth: 4.5,
+        fill: false,
+        tension: 0.4,
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointHoverBackgroundColor: isDarkMode ? '#fff' : '#0f172a',
+        pointHoverBorderColor: isDarkMode ? '#0f172a' : '#fff',
         pointHoverBorderWidth: 2,
         order: 100, // On top of all volumes
     });
