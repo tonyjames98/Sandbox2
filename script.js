@@ -2332,6 +2332,13 @@ function renderGoals() {
     // Sort goals by year
     const sortedGoals = [...goals].sort((a, b) => a.year - b.year);
     
+    // Calculate average return rate once for all goal bridges
+    const assetsOnly = investments.filter(inv => inv.type !== 'Debt');
+    const totalAssetBal = assetsOnly.reduce((sum, inv) => sum + inv.amount, 0);
+    const avgReturn = totalAssetBal > 0 
+        ? (assetsOnly.reduce((sum, inv) => sum + (inv.amount * inv.returnRate), 0) / totalAssetBal)
+        : 7; // Default 7%
+
     sortedGoals.forEach(goal => {
         // Calculate progress
         let currentVal = 0;
@@ -2359,6 +2366,35 @@ function renderGoals() {
         const progress = Math.min(100, Math.max(0, (currentVal / goal.amount) * 100));
         const isOnTrack = currentVal >= goal.amount;
         const icon = categoryIcons[goal.category] || 'target';
+
+        // Calculate Bridge Advice
+        let bridgeAdvice = '';
+        if (!isOnTrack && projections.length > 0) {
+            const shortfall = goal.amount - currentVal;
+            const currentYear = new Date().getFullYear();
+            const yearsRemaining = Math.max(0.1, goal.year - currentYear);
+            
+            const r = (avgReturn / 100) / 12;
+            const n = yearsRemaining * 12;
+            
+            let monthlyNeeded;
+            if (r > 0) {
+                // P = FV / [((1 + r)^n - 1) / r]
+                monthlyNeeded = shortfall / ((Math.pow(1 + r, n) - 1) / r);
+            } else {
+                monthlyNeeded = shortfall / n;
+            }
+
+            bridgeAdvice = `
+                <div class="goal-bridge-advice">
+                    <div class="bridge-header">
+                        <i data-lucide="zap" style="width: 14px; height: 14px; color: var(--warning);"></i>
+                        <span>Bridge the Gap</span>
+                    </div>
+                    <p>To reach this goal, you need to save an additional <strong>$${formatNumber(monthlyNeeded)}</strong> per month.</p>
+                </div>
+            `;
+        }
         
         const card = document.createElement('div');
         card.className = 'goal-card';
@@ -2388,6 +2424,8 @@ function renderGoals() {
                     <div class="goal-progress-fill" style="width: ${progress}%"></div>
                 </div>
             </div>
+
+            ${bridgeAdvice}
             
             <div class="goal-actions event-actions">
                 <button class="btn btn-outline btn-sm" onclick="editGoal('${goal.id}')">

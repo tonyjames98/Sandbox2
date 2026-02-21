@@ -2427,3 +2427,36 @@ th { background: var(--bg-main); font-weight: 700; color: var(--text-muted); }
 .auth-modal .btn-primary {
     width: 100%;
 }
+
+/* Goal Bridge Advice */
+.goal-bridge-advice {
+    margin-top: 1.25rem;
+    padding: 1rem;
+    background: rgba(245, 158, 11, 0.05);
+    border-radius: var(--radius-md);
+    border: 1px dashed rgba(245, 158, 11, 0.3);
+}
+
+.bridge-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--warning);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.goal-bridge-advice p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    line-height: 1.5;
+}
+
+.goal-bridge-advice strong {
+    color: var(--warning);
+    font-weight: 700;
+}
