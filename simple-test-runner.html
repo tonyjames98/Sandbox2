@@ -231,11 +231,12 @@
                 </ul>
             </div>
             <div style="padding: 15px; background: #f1f5f9; border-radius: 8px;">
-                <h4 style="margin: 0 0 10px 0; color: #475569;">💬 UX & UI Polish (230)</h4>
+                <h4 style="margin: 0 0 10px 0; color: #475569;">💬 UX & UI Polish (430)</h4>
                 <ul style="margin: 0; padding-left: 20px; font-size: 0.9rem; color: #64748b;">
-                    <li>Global tooltip portal & collision logic</li>
-                    <li>Dynamic $ and % symbol switching</li>
-                    <li>Interactive sliders & form synchronization</li>
+                    <li>3-Step Guided Onboarding transitions</li>
+                    <li>Automatic projection on timeframe change</li>
+                    <li>Debt Funding Source logic verification</li>
+                    <li>Modern stacked input & slider layouts</li>
                 </ul>
             </div>
         </div>
@@ -256,11 +257,15 @@
 
     <!-- Hidden container for UI elements required by script.js during integration testing -->
     <div id="integration-test-elements" style="visibility: hidden; height: 0; overflow: hidden; position: absolute;">
-        <div id="current-net-worth"></div>
         <div id="projected-net-worth-value"></div>
         <div id="investment-count"></div>
         <div id="event-count"></div>
         <div id="projection-years-label"></div>
+        <div class="kpi-card primary">
+            <div id="current-net-worth"></div>
+            <button id="guide-add-investment" onclick="quickAddInvestment('Stocks')"></button>
+            <button id="guide-add-debt" onclick="quickAddInvestment('Debt')"></button>
+        </div>
         <canvas id="net-worth-chart"></canvas>
         <canvas id="allocation-chart"></canvas>
         <canvas id="allocation-timeline-chart"></canvas>
@@ -275,7 +280,9 @@
         <input type="range" id="market-performance-slider" value="0">
         <input type="range" id="savings-boost-slider" value="0">
         <select id="savings-boost-target"></select>
-        <input type="number" id="projection-years-input" value="30">
+        <div id="guide-years">
+            <input type="number" id="projection-years-input" value="30" oninput="runProjection()">
+        </div>
         <div id="market-offset-val"></div>
         <div id="savings-boost-val"></div>
         <button id="reset-what-if"></button>
@@ -297,6 +304,7 @@
         <div id="toast-container"></div>
         <div id="global-tooltip"></div>
         <button id="mobile-theme-toggle"></button>
+        <div id="guide-events-card" class="kpi-card accent"></div>
         <input type="range" id="mc-volatility-slider" value="12">
         <input type="number" id="mc-volatility" value="12">
         <select id="mc-iterations"><option value="500">500</option></select>

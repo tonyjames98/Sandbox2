@@ -57,6 +57,43 @@
     background: rgba(99, 102, 241, 0.05) !important;
 }
 
+/* Onboarding Tips */
+.onboarding-tip {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--border-focus);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    pointer-events: none;
+    animation: tipBounce 2s infinite;
+}
+
+.onboarding-tip::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid var(--border-focus);
+}
+
+@keyframes tipBounce {
+    0%, 100% { transform: translate(-50%, 0); }
+    50% { transform: translate(-50%, -5px); }
+}
+
 @media (max-width: 1200px) {
     :root {
         --sidebar-width: 220px;
@@ -1714,7 +1751,7 @@ input, select, textarea {
 }
 
 /* Tab contents */
-.tab-content { display: none; }
+.tab-content { display: none; padding-bottom: 3rem; }
 .tab-content.active { display: block; animation: fadeIn 0.3s; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 

@@ -115,7 +115,7 @@
                 </button>
                 <button class="nav-item" data-tab="investments">
                     <i data-lucide="briefcase"></i>
-                    <span>Add Investments/Debt</span>
+                    <span>Add Assets/Debt</span>
                 </button>
                 <button class="nav-item" data-tab="events">
                     <i data-lucide="calendar"></i>
@@ -186,7 +186,7 @@
                             <div class="kpi-actions-row">
                                 <button id="guide-add-investment" class="kpi-btn" onclick="quickAddInvestment('Stocks')">
                                     <i data-lucide="plus"></i>
-                                    <span>Add Investment</span>
+                                    <span>Add Asset</span>
                                 </button>
                                 <button id="guide-add-debt" class="kpi-btn" onclick="quickAddInvestment('Debt')">
                                     <i data-lucide="plus"></i>
@@ -194,20 +194,7 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="kpi-card secondary">
-                            <div class="kpi-header">
-                                <span>Projected Future</span>
-                                <i data-lucide="trending-up"></i>
-                            </div>
-                            <div class="kpi-value" id="projected-net-worth-value">$0</div>
-                            <div class="kpi-subtitle" id="projection-years-label">By 2054</div>
-                            <div class="kpi-actions-row">
-                                <button class="kpi-btn" onclick="updateProjectionPeriod(10)">10Y</button>
-                                <button class="kpi-btn" onclick="updateProjectionPeriod(20)">20Y</button>
-                                <button class="kpi-btn" onclick="updateProjectionPeriod(30)">30Y</button>
-                            </div>
-                        </div>
-                        <div class="kpi-card accent" data-tooltip="Manage your financial events like salary, bonuses, or major purchases.">
+                        <div class="kpi-card accent" id="guide-events-card" data-tooltip="Manage your financial events like salary, bonuses, or major purchases.">
                             <div class="kpi-header">
                                 <span>Portfolio Summary</span>
                                 <i data-lucide="pie-chart"></i>
@@ -236,6 +223,19 @@
                                     <i data-lucide="plus"></i>
                                     <span>Withdrawal</span>
                                 </button>
+                            </div>
+                        </div>
+                        <div class="kpi-card secondary">
+                            <div class="kpi-header">
+                                <span>Projected Future</span>
+                                <i data-lucide="trending-up"></i>
+                            </div>
+                            <div class="kpi-value" id="projected-net-worth-value">$0</div>
+                            <div class="kpi-subtitle" id="projection-years-label">By 2054</div>
+                            <div class="kpi-actions-row">
+                                <button class="kpi-btn" onclick="updateProjectionPeriod(10)">10Y</button>
+                                <button class="kpi-btn" onclick="updateProjectionPeriod(20)">20Y</button>
+                                <button class="kpi-btn" onclick="updateProjectionPeriod(30)">30Y</button>
                             </div>
                         </div>
                     </div>
@@ -273,7 +273,7 @@
                                         <i data-lucide="save"></i>
                                         <span>Set Baseline</span>
                                     </button>
-                                    <div class="input-group years-input-group">
+                                    <div id="guide-years" class="input-group years-input-group">
                                         <label for="projection-years-input" data-tooltip="How many years into the future should we project?">Projection Period</label>
                                         <div class="input-with-symbol years-wrapper">
                                             <input type="number" id="projection-years-input" min="1" max="60" value="30" oninput="runProjection()">
@@ -370,10 +370,10 @@
                 <!-- Investments Tab -->
                 <div class="tab-content" id="investments">
                     <div class="content-header">
-                        <h2>Add Investments & Debt</h2>
+                        <h2>Add Assets & Debt</h2>
                         <button class="btn btn-primary" onclick="showAddInvestmentModal()">
                             <i data-lucide="plus"></i>
-                            <span>Add Investment/Debt</span>
+                            <span>Add Asset/Debt</span>
                         </button>
                     </div>
                     <div class="investments-list" id="investments-list">
@@ -836,7 +836,7 @@
         </button>
         <button class="bottom-nav-item" data-tab="investments">
             <i data-lucide="briefcase"></i>
-            <span>Add Investments/Debt</span>
+            <span>Add Assets/Debt</span>
         </button>
         <button class="bottom-nav-item" data-tab="events">
             <i data-lucide="calendar"></i>
@@ -856,7 +856,7 @@
     <div class="modal" id="investment-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Investment/Debt Details</h3>
+                <h3>Asset/Debt Details</h3>
                 <button class="close-btn" onclick="closeModal('investment-modal')"><i data-lucide="x"></i></button>
             </div>
             <form id="investment-form">

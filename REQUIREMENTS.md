@@ -8,9 +8,10 @@ To provide a fast, privacy-focused, and visual way for users to project their fi
 ## 2. Functional Requirements
 
 ### 2.1 Asset & Debt Management
-- **Add Investments**: Support for Stocks, Bonds, Real Estate, Cash, Crypto, and Mutual Funds.
+- **Add Assets**: Support for Stocks, Bonds, Real Estate, Cash, Crypto, and Mutual Funds.
 - **Custom Return Rates**: Each asset can have its own expected annual return rate.
 - **Debt Tracking**: Support for loans/debt with interest rates and mandatory monthly payments.
+- **Debt Funding Source**: Ability to select a specific asset account or "Proportional" as the source for debt repayments.
 - **Target Allocation**: Ability to set a target percentage for each asset to support automated rebalancing.
 
 ### 2.2 Financial Events
@@ -22,6 +23,7 @@ To provide a fast, privacy-focused, and visual way for users to project their fi
 
 ### 2.3 Projection Engine
 - **Net Worth Calculation**: Real-time projection of net worth over 1 to 60 years.
+- **Automatic Updates**: Real-time re-calculation of projections when years or any data point is modified.
 - **Inflation Adjustment**: Option to discount future values to "today's dollars" using a custom inflation rate.
 - **What-If Scenarios**: Real-time interactive sliders for market performance offsets and monthly savings boosts/expenses.
 - **Baseline Comparison**: Capability to "lock" a scenario as a baseline and compare it against experimental changes.
@@ -41,18 +43,19 @@ To provide a fast, privacy-focused, and visual way for users to project their fi
   - Asset Allocation (Doughnut chart)
   - Asset Allocation Over Time (Stacked area chart)
   - Monte Carlo Probability (Line chart with percentile bands)
-- **KPI Dashboard**: Quick view of current net worth, projected future net worth, and portfolio stats.
-- **Detailed Timeline**: Year-by-year breakdown table with "Year Details" modal for deep dives into specific years.
+- **KPI Dashboard**: Modern 3-column view (Current Net Worth, Portfolio Summary, Projected Future) with direct action buttons.
+- **Detailed Timeline**: Year-by-year breakdown table with "Year Details" modal. Mobile-responsive card view for easier reading on narrow screens.
+- **Advanced Simulations**: Standalone calculators for FIRE SWR, Sequence of Returns, Compound Interest, and Loan Amortization.
 - **Responsive Design**: Optimized for desktop, tablet, and mobile (sidebar vs bottom navigation).
 - **Dark Mode**: Locked-in dark theme for a modern, high-contrast financial UI.
 - **Global Tooltips**: Context-sensitive guidance for every major feature, managed via a global portal to prevent clipping.
 
 ### 2.6 UX Features
-- **Onboarding Guide**: Pulse animations and sample scenario loaders for new users.
-- **Keyboard Shortcuts**: `Alt+A` (New Investment), `Ctrl+E` (New Event), `Ctrl+G` (New Goal), `Esc` (Close Modals/Tooltips).
+- **3-Step Guided Onboarding**: Step-by-step guidance tips (Step 1: Add Assets/Debt -> Step 2: Add Events -> Step 3: Set Timeframe).
+- **Keyboard Shortcuts**: `Alt+A` (New Asset), `Ctrl+E` (New Event), `Ctrl+G` (New Goal), `Esc` (Close Modals/Tooltips).
 - **Toast Notifications**: Modern animated feedback for user actions (Save, Delete, Errors) with status icons.
 - **AI Integration**: One-click prompt generator for advanced analysis in external AI tools (like ChatGPT).
-- **Dynamic Input Polish**: Real-time $ and % symbol formatting and range sliders for all major financial inputs.
+- **Dynamic Input Polish**: Real-time $ and % symbol formatting. Stacked input/slider layout for improved readability of large figures.
 - **Enhanced Empty States**: Visual illustrations and quick-action buttons for empty lists.
 
 ## 3. Technical Stack

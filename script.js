@@ -135,21 +135,54 @@ function updateOnboardingGuide() {
     const netWorthCard = document.querySelector('.kpi-card.primary');
     const btnInvestment = document.getElementById('guide-add-investment');
     const btnDebt = document.getElementById('guide-add-debt');
+    const yearsControl = document.getElementById('guide-years');
+    const eventsCard = document.getElementById('guide-events-card');
     const sampleContainer = document.getElementById('onboarding-sample-container');
     
-    // Clear existing pulse/glow
+    // Clear existing pulse/glow/tips
+    document.querySelectorAll('.onboarding-tip').forEach(tip => tip.remove());
     netWorthCard?.classList.remove('guide-glow');
     btnInvestment?.classList.remove('guide-pulse');
     btnDebt?.classList.remove('guide-pulse');
+    yearsControl?.classList.remove('guide-glow');
+    eventsCard?.classList.remove('guide-glow');
     
-    // Only glow card and pulse buttons if net worth is 0 and no investments added
-    if (totalNetWorth === 0 && investments.length === 0) {
+    // Helper to add a tip
+    const addTip = (parent, text) => {
+        if (!parent) return;
+        const tip = document.createElement('div');
+        tip.className = 'onboarding-tip';
+        tip.textContent = text;
+        parent.appendChild(tip);
+    };
+
+    // Step 1: Add Assets/Debt
+    if (investments.length === 0) {
         netWorthCard?.classList.add('guide-glow');
         btnInvestment?.classList.add('guide-pulse');
         btnDebt?.classList.add('guide-pulse');
+        addTip(netWorthCard, 'Step 1: Add Assets or Debt');
         if (sampleContainer) sampleContainer.style.display = 'block';
+        return;
     } else {
         if (sampleContainer) sampleContainer.style.display = 'none';
+    }
+
+    // Step 2: Add Events
+    if (events.length === 0) {
+        eventsCard?.classList.add('guide-glow');
+        const incomeBtn = eventsCard?.querySelector('.kpi-btn'); // Just grab the first button
+        incomeBtn?.classList.add('guide-pulse');
+        addTip(eventsCard, 'Step 2: Add Income or Expenses');
+        return;
+    }
+
+    // Step 3: Set Timeframe
+    const hasRunProjection = localStorage.getItem('hasRunProjection');
+    if (!hasRunProjection) {
+        yearsControl?.classList.add('guide-glow');
+        addTip(yearsControl, 'Step 3: Set Timeframe');
+        return;
     }
 }
 
@@ -1156,7 +1189,7 @@ function switchTab(tabName) {
     if (pageTitle) {
         const titles = {
             'dashboard': 'Dashboard',
-            'investments': 'Add Investments & Debt',
+            'investments': 'Add Assets & Debt',
             'events': 'Add Income & Events',
             'goals': 'Financial Goals',
             'export': 'Export & Share',
@@ -1225,10 +1258,10 @@ function showAddInvestmentModal(defaultType = 'Stocks') {
     // Set initial defaults based on selected type
     updateInvestmentDefaults();
     
-    // Update button text to "Add Investment/Debt"
+    // Update button text to "Add Asset/Debt"
     const submitBtn = document.querySelector('#investment-form button[type="submit"]');
     if (submitBtn) {
-        submitBtn.textContent = 'Add Investment/Debt';
+        submitBtn.textContent = 'Add Asset/Debt';
     }
     
     // Hide delete button
@@ -1422,10 +1455,10 @@ function editInvestment(id) {
     // Store editing id
     document.getElementById('investment-form').setAttribute('data-edit-id', id);
     
-    // Update button text to "Update Investment/Debt"
+    // Update button text to "Update Asset/Debt"
     const submitBtn = document.querySelector('#investment-form button[type="submit"]');
     if (submitBtn) {
-        submitBtn.textContent = 'Update Investment/Debt';
+        submitBtn.textContent = 'Update Asset/Debt';
     }
     
     // Show delete button
@@ -1552,6 +1585,9 @@ function renderInvestments() {
 
     // Refresh icons
     if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // Update onboarding
+    updateOnboardingGuide();
 }
 
 function deleteInvestment(id) {
@@ -2086,6 +2122,9 @@ function renderEvents() {
     });
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // Update onboarding
+    updateOnboardingGuide();
 }
 
 function deleteEvent(id) {
