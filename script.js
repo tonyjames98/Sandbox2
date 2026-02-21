@@ -309,24 +309,26 @@ function loadSampleScenario() {
     events = [
         { 
             id: 'sample-evt-1', 
-            type: 'recurring-income', 
+            type: 'income', 
+            isRecurring: true,
             description: 'Monthly Salary', 
             amount: 5000, 
             frequency: 'monthly', 
             startDate: new Date().toISOString().split('T')[0], 
             endDate: null,
-            target: 'sample-1',
+            to: 'sample-1',
             createdAt: new Date().toISOString() 
         },
         { 
             id: 'sample-evt-2', 
-            type: 'recurring', 
+            type: 'expense', 
+            isRecurring: true,
             description: 'Rent & Living Expenses', 
             amount: 3200, 
             frequency: 'monthly', 
             startDate: new Date().toISOString().split('T')[0], 
             endDate: null,
-            source: 'sample-3',
+            from: 'sample-3',
             createdAt: new Date().toISOString() 
         },
         { 
@@ -335,12 +337,13 @@ function loadSampleScenario() {
             description: 'New Car', 
             amount: 35000, 
             date: new Date(new Date().getFullYear() + 5, 5, 15).toISOString().split('T')[0],
-            source: 'sample-1',
+            from: 'sample-1',
             createdAt: new Date().toISOString() 
         },
         { 
             id: 'sample-evt-4', 
             type: 'rebalancing', 
+            isRecurring: true,
             frequency: 'annually',
             createdAt: new Date().toISOString() 
         }
