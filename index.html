@@ -146,28 +146,28 @@
                     <span>AI Analysis</span>
                 </button>
 
-                <!-- Auth Integration in Sidebar -->
-                <div class="sidebar-auth-section" id="sidebar-auth-section">
-                    <button class="nav-item" id="sidebar-login-btn" onclick="showAuthModal('login')">
-                        <i data-lucide="log-in"></i>
-                        <span>Login / Sign Up</span>
-                    </button>
-                    <div id="sidebar-profile-btn" class="nav-item profile-info" style="display: none;">
-                        <i data-lucide="user"></i>
-                        <span id="user-email-display">user@example.com</span>
-                        <button class="btn-icon btn-logout" onclick="logout()" title="Logout">
-                            <i data-lucide="log-out"></i>
+                <!-- Mobile-Only Auth & Reset -->
+                <div class="mobile-nav-actions">
+                    <div class="header-divider"></div>
+                    <div class="sidebar-auth-section" id="sidebar-auth-section">
+                        <button class="nav-item" id="sidebar-login-btn" onclick="showAuthModal('login')">
+                            <i data-lucide="log-in"></i>
+                            <span>Login / Sign Up</span>
                         </button>
+                        <div id="sidebar-profile-btn" class="nav-item profile-info" style="display: none;">
+                            <i data-lucide="user"></i>
+                            <span id="user-email-display" class="user-email">user@example.com</span>
+                            <button class="btn-icon btn-logout" onclick="logout()" title="Logout">
+                                <i data-lucide="log-out"></i>
+                            </button>
+                        </div>
                     </div>
+                    <button class="nav-item btn-reset-mobile" onclick="resetAllData()">
+                        <i data-lucide="trash-2"></i>
+                        <span>Reset Data</span>
+                    </button>
                 </div>
             </nav>
-            
-            <div class="sidebar-footer">
-                <button class="btn-reset" onclick="resetAllData()">
-                    <i data-lucide="trash-2"></i>
-                    <span>Reset Data</span>
-                </button>
-            </div>
         </aside>
 
         <!-- Main Content Area -->
@@ -183,6 +183,32 @@
                     <button class="btn btn-sm btn-outline quick-share-btn" onclick="shareProjection()" data-tooltip="Copy a shareable link to your current projection">
                         <i data-lucide="share-2"></i>
                         <span>Share</span>
+                    </button>
+                    
+                    <div class="header-divider"></div>
+                    
+                    <!-- Auth & Reset in Header -->
+                    <div class="header-auth-section" id="header-auth-section">
+                        <button class="btn btn-sm btn-primary" id="header-login-btn" onclick="showAuthModal('login')">
+                            <i data-lucide="log-in"></i>
+                            <span>Login / Sign Up</span>
+                        </button>
+                        <div id="header-profile-btn" class="profile-info-header" style="display: none;">
+                            <div class="user-avatar">
+                                <i data-lucide="user"></i>
+                            </div>
+                            <span id="user-email-display-header" class="user-email">user@example.com</span>
+                            <button class="btn-icon btn-logout" onclick="logout()" title="Logout">
+                                <i data-lucide="log-out"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="header-divider"></div>
+
+                    <button class="btn btn-sm btn-ghost btn-reset-header" onclick="resetAllData()" title="Reset all data and start over">
+                        <i data-lucide="trash-2"></i>
+                        <span>Reset</span>
                     </button>
                 </div>
             </header>
@@ -233,10 +259,6 @@
                                 <button class="kpi-btn" onclick="quickAddEventType('income')">
                                     <i data-lucide="plus"></i>
                                     <span>Income</span>
-                                </button>
-                                <button class="kpi-btn" onclick="quickAddEventType('expense')">
-                                    <i data-lucide="plus"></i>
-                                    <span>Expense</span>
                                 </button>
                                 <button class="kpi-btn" onclick="quickAddEventType('withdrawal')">
                                     <i data-lucide="plus"></i>

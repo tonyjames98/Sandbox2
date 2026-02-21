@@ -4246,8 +4246,8 @@ function setupMobileMenu() {
     closeBtn.addEventListener('click', closeMenu);
     overlay.addEventListener('click', closeMenu);
 
-    // Close menu when clicking brand, nav item, or other sidebar buttons on mobile
-    const closeTargets = document.querySelectorAll('.sidebar .brand, .sidebar .nav-item, .sidebar .btn-reset, .sidebar .theme-toggle');
+    // Close menu when clicking brand or nav item on mobile
+    const closeTargets = document.querySelectorAll('.sidebar .brand, .sidebar .nav-item, .sidebar .theme-toggle');
     closeTargets.forEach(target => {
         target.addEventListener('click', () => {
             if (window.innerWidth <= 768) {

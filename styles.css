@@ -135,7 +135,7 @@
         --sidebar-width: 80px;
     }
     
-    .brand-text, .nav-item span, .sidebar-footer span {
+    .brand-text, .nav-item span {
         display: none;
     }
     
@@ -152,19 +152,6 @@
     
     .brand {
         justify-content: center;
-    }
-
-    .sidebar-footer {
-        padding: 0.75rem;
-    }
-
-    .btn-reset {
-        justify-content: center;
-        padding: 0.75rem;
-    }
-
-    .btn-reset i {
-        margin: 0;
     }
 }
 
@@ -291,41 +278,6 @@ body {
     background: var(--primary-gradient);
     color: var(--text-on-gradient);
     box-shadow: var(--shadow-md);
-}
-
-/* Sidebar Footer */
-.sidebar-footer {
-    padding: 1.25rem;
-    border-top: 1px solid var(--border-light);
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.btn-reset {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    font-size: 0.875rem;
-    transition: all 0.2s;
-    cursor: pointer;
-    width: 100%;
-    border: 1px solid var(--border-light);
-    background: var(--bg-main);
-    color: var(--text-muted);
-}
-
-.btn-reset {
-    border-color: rgba(239, 68, 68, 0.2);
-    color: var(--danger);
-}
-
-.btn-reset:hover {
-    background: rgba(239, 68, 68, 0.05);
-    border-color: var(--danger);
 }
 
 .main-content {
@@ -1547,15 +1499,15 @@ input, select, textarea {
         align-items: center;
     }
     
-    .brand-text, .nav-item span, .sidebar-footer span {
+    .brand-text, .nav-item span {
         display: block !important;
     }
 
-    .nav-item, .brand, .theme-toggle, .btn-reset {
+    .nav-item, .brand, .theme-toggle {
         justify-content: flex-start !important;
     }
 
-    .nav-item i, .theme-toggle i, .btn-reset i {
+    .nav-item i, .theme-toggle i {
         margin-right: 0.75rem !important;
     }
 
@@ -2350,27 +2302,75 @@ th { background: var(--bg-main); font-weight: 700; color: var(--text-muted); }
 }
 
 /* Authentication Styles */
-.sidebar-auth-section {
-    margin-top: auto;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-light);
+.header-auth-section {
+    display: flex;
+    align-items: center;
 }
 
-.profile-info {
+.profile-info-header {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    font-size: 0.875rem;
-    color: var(--text-main);
+    background: var(--bg-sidebar);
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-light);
 }
 
-#user-email-display {
-    flex: 1;
+.user-avatar {
+    width: 24px;
+    height: 24px;
+    background: var(--accent-gradient);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-avatar i {
+    width: 14px;
+    height: 14px;
+}
+
+.user-email {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-main);
+    max-width: 150px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-weight: 500;
+}
+
+.header-divider {
+    width: 1px;
+    height: 24px;
+    background: var(--border-light);
+    margin: 0 0.5rem;
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid transparent;
+}
+
+.btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+}
+
+.btn-reset-header {
+    color: var(--danger);
+    opacity: 0.7;
+    transition: all 0.2s;
+}
+
+.btn-reset-header:hover {
+    opacity: 1;
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.2);
 }
 
 .btn-logout {
@@ -2459,4 +2459,32 @@ th { background: var(--bg-main); font-weight: 700; color: var(--text-muted); }
 .goal-bridge-advice strong {
     color: var(--warning);
     font-weight: 700;
+}
+
+/* Mobile Visibility Controls */
+.mobile-nav-actions {
+    display: none;
+}
+
+@media (max-width: 1024px) {
+    .top-bar-actions .header-divider,
+    .top-bar-actions .header-auth-section,
+    .top-bar-actions .btn-reset-header {
+        display: none;
+    }
+
+    .mobile-nav-actions {
+        display: block;
+        margin-top: auto;
+    }
+
+    .btn-reset-mobile {
+        color: var(--danger) !important;
+        opacity: 0.8;
+    }
+
+    .btn-reset-mobile:hover {
+        opacity: 1;
+        background: rgba(239, 68, 68, 0.1) !important;
+    }
 }

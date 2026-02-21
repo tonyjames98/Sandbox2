@@ -41,15 +41,25 @@ async function checkAuthState() {
 }
 
 function updateUIForAuth(session) {
+    // Header elements
+    const loginBtnHeader = document.getElementById('header-login-btn');
+    const profileBtnHeader = document.getElementById('header-profile-btn');
+    const userEmailSpanHeader = document.getElementById('user-email-display-header');
+
+    // Sidebar elements (mobile)
     const loginBtnSidebar = document.getElementById('sidebar-login-btn');
     const profileBtnSidebar = document.getElementById('sidebar-profile-btn');
-    const userEmailSpan = document.getElementById('user-email-display');
+    const userEmailSpanSidebar = document.getElementById('user-email-display');
 
     if (session) {
         // User is logged in
+        if (loginBtnHeader) loginBtnHeader.style.display = 'none';
+        if (profileBtnHeader) profileBtnHeader.style.display = 'flex';
+        if (userEmailSpanHeader) userEmailSpanHeader.textContent = session.user.email;
+
         if (loginBtnSidebar) loginBtnSidebar.style.display = 'none';
         if (profileBtnSidebar) profileBtnSidebar.style.display = 'flex';
-        if (userEmailSpan) userEmailSpan.textContent = session.user.email;
+        if (userEmailSpanSidebar) userEmailSpanSidebar.textContent = session.user.email;
         
         // Load data from Supabase
         if (typeof loadFromSupabase === 'function') {
@@ -59,9 +69,14 @@ function updateUIForAuth(session) {
         console.log('User is logged in:', session.user.email);
     } else {
         // User is logged out
+        if (loginBtnHeader) loginBtnHeader.style.display = 'flex';
+        if (profileBtnHeader) profileBtnHeader.style.display = 'none';
+        if (userEmailSpanHeader) userEmailSpanHeader.textContent = '';
+
         if (loginBtnSidebar) loginBtnSidebar.style.display = 'flex';
         if (profileBtnSidebar) profileBtnSidebar.style.display = 'none';
-        if (userEmailSpan) userEmailSpan.textContent = '';
+        if (userEmailSpanSidebar) userEmailSpanSidebar.textContent = '';
+        
         console.log('User is logged out');
     }
 }
