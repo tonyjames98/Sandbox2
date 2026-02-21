@@ -1317,11 +1317,12 @@ function generateUniqueInvestmentName(type = 'Stocks') {
     const baseNames = {
         'Stocks': ['S&P 500', 'Russell 2000', 'Vanguard Total Stock Market', 'Stock Market', 'Stocks'],
         'Bonds': ['US Treasury Bond', 'Corporate Bond Fund', 'Municipal Bond', 'TIPS Fund', 'High-Yield Bond'],
-        'Real Estate': ['Real Estate Investment Trust', 'Property Investment', 'REIT Fund', 'Real Estate ETF', 'Property Portfolio'],
-        'Cash': ['High-Yield Savings', 'Money Market Account', 'CD Ladder', 'Emergency Fund', 'Cash Reserve'],
+        'Real Estate': ['Primary Residence', 'Rental Property', 'Investment Property', 'Vacation Home', 'Commercial Real Estate'],
+        'Cash': ['High-Yield Savings', 'Emergency Fund', 'Checking Account', 'CD Ladder', 'Money Market'],
         'Cryptocurrency': ['Bitcoin', 'Ethereum', 'Cardano', 'Polkadot', 'Solana'],
         'Mutual Fund/Index Fund': ['Vanguard Total Stock Market Index Fund', 'Fidelity 500 Index Fund', 'Schwab Total Bond Market Fund', 'iShares Core S&P 500 ETF', 'Vanguard Total International Stock Index Fund'],
-        'Other': ['Alternative Investment', 'Commodity Fund', 'Hedge Fund', 'Private Equity', 'Structured Product']
+        'Debt': ['Mortgage', 'Car Loan', 'Student Loan', 'Credit Card', 'Personal Loan'],
+        'Other': ['Gold/Silver', 'Commodity Fund', 'Collectibles', 'Private Equity', 'Venture Capital']
     };
     
     const names = baseNames[type] || baseNames['Other'];
@@ -2967,8 +2968,10 @@ function updateProjectionPeriod(years) {
 
 function updateAllocationChart() {
     const ctx = document.getElementById('allocation-chart');
+    const assetList = document.getElementById('asset-allocation-list');
     const debtCtx = document.getElementById('debt-allocation-chart');
     const debtSection = document.getElementById('debt-allocation-section');
+    const debtList = document.getElementById('debt-allocation-list');
     if (!ctx) return;
 
     if (charts.allocation) {
@@ -2982,9 +2985,11 @@ function updateAllocationChart() {
     const validDebts = investments.filter(inv => inv.type === 'Debt' && inv.amount > 0);
     
     const isDarkMode = true;
+    const lastProj = projections && projections.length > 0 ? projections[projections.length - 1] : null;
 
     if (validInvestments.length === 0) {
         ctx.style.display = 'none';
+        if (assetList) assetList.innerHTML = '';
     } else {
         ctx.style.display = 'block';
         const colors = generateInvestmentColors(validInvestments.length);
@@ -3042,6 +3047,30 @@ function updateAllocationChart() {
                 }
             }
         });
+
+        // Update Asset List
+        if (assetList) {
+            assetList.innerHTML = `
+                <div class="allocation-list-header">
+                    <span>Asset</span>
+                    <span>Start</span>
+                    <span>End</span>
+                </div>
+                ${validInvestments.map((inv, i) => {
+                    const endBal = lastProj ? (lastProj.balances[inv.id] || 0) : 0;
+                    return `
+                        <div class="allocation-list-item" onclick="editInvestment('${inv.id}')">
+                            <div class="item-name">
+                                <span class="color-dot" style="background-color: ${colors[i]}"></span>
+                                <span>${inv.name}</span>
+                            </div>
+                            <div class="item-start">$${formatNumber(inv.amount)}</div>
+                            <div class="item-end">$${formatNumber(endBal)}</div>
+                        </div>
+                    `;
+                }).join('')}
+            `;
+        }
     }
 
     // Handle Debt Section
@@ -3107,8 +3136,33 @@ function updateAllocationChart() {
                 }
             }
         });
+
+        // Update Debt List
+        if (debtList) {
+            debtList.innerHTML = `
+                <div class="allocation-list-header">
+                    <span>Debt</span>
+                    <span>Start</span>
+                    <span>End</span>
+                </div>
+                ${validDebts.map((inv, i) => {
+                    const endBal = lastProj ? (lastProj.balances[inv.id] || 0) : 0;
+                    return `
+                        <div class="allocation-list-item" onclick="editInvestment('${inv.id}')">
+                            <div class="item-name">
+                                <span class="color-dot" style="background-color: ${debtColors[i]}"></span>
+                                <span>${inv.name}</span>
+                            </div>
+                            <div class="item-start">$${formatNumber(inv.amount)}</div>
+                            <div class="item-end">$${formatNumber(Math.abs(endBal))}</div>
+                        </div>
+                    `;
+                }).join('')}
+            `;
+        }
     } else if (debtSection) {
         debtSection.style.display = 'none';
+        if (debtList) debtList.innerHTML = '';
     }
 }
 

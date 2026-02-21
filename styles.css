@@ -1107,6 +1107,78 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .action-card.withdrawal .action-icon { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
 .action-card.rebalancing .action-icon { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
 
+/* Allocation Details List */
+.allocation-details-list {
+    margin-top: 1rem;
+    font-size: 0.8125rem;
+}
+
+.allocation-list-header {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 1rem;
+    padding: 0.5rem 0.25rem;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    font-size: 0.75rem;
+}
+
+.allocation-list-header span:nth-child(2),
+.allocation-list-header span:nth-child(3) {
+    width: 80px;
+    text-align: right;
+}
+
+.allocation-list-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 1rem;
+    padding: 0.75rem 0.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.allocation-list-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.allocation-list-item .item-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.allocation-list-item .color-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.allocation-list-item .item-start,
+.allocation-list-item .item-end {
+    width: 80px;
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+}
+
+.allocation-list-item .item-start {
+    color: var(--text-muted);
+}
+
+.allocation-list-item .item-end {
+    color: var(--text-main);
+    font-weight: 600;
+}
+
 .action-card:hover .action-icon {
     transform: scale(1.1);
 }
