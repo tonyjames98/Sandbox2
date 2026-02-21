@@ -3,40 +3,45 @@
  */
 
 const DB_SYNC_TABLE = 'user_projections';
+let syncDebounceTimer = null;
 
 /**
  * Syncs the current projection data to Supabase if the user is logged in.
- * This is called by the main application whenever data changes.
+ * Debounced to avoid rapid consecutive calls.
  */
-async function syncToSupabase() {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) return;
+function syncToSupabase() {
+    if (syncDebounceTimer) clearTimeout(syncDebounceTimer);
+    
+    syncDebounceTimer = setTimeout(async () => {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) return;
 
-    // Get current data from local storage (already saved by saveData in script.js)
-    const localData = localStorage.getItem('financeProjectionData');
-    if (!localData) return;
+        // Get current data from local storage
+        const localData = localStorage.getItem('financeProjectionData');
+        if (!localData) return;
 
-    const dataObj = JSON.parse(localData);
+        const dataObj = JSON.parse(localData);
 
-    try {
-        const { error } = await supabaseClient
-            .from(DB_SYNC_TABLE)
-            .upsert({ 
-                user_id: session.user.id, 
-                data: dataObj,
-                updated_at: new Date().toISOString()
-            }, { 
-                onConflict: 'user_id' 
-            });
+        try {
+            const { error } = await supabaseClient
+                .from(DB_SYNC_TABLE)
+                .upsert({ 
+                    user_id: session.user.id, 
+                    data: dataObj,
+                    updated_at: new Date().toISOString()
+                }, { 
+                    onConflict: 'user_id' 
+                });
 
-        if (error) {
-            console.error('Error syncing to Supabase:', error.message);
-        } else {
-            console.log('Synced projection data to Supabase');
+            if (error) {
+                console.error('Error syncing to Supabase:', error.message);
+            } else {
+                console.log('Synced projection data to Supabase');
+            }
+        } catch (err) {
+            console.error('Supabase sync error:', err);
         }
-    } catch (err) {
-        console.error('Supabase sync error:', err);
-    }
+    }, 1000); // 1-second debounce
 }
 
 /**

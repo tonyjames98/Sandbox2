@@ -1562,9 +1562,8 @@ function handleInvestmentSubmit(e) {
     if (typeof lucide !== 'undefined') lucide.createIcons();
     
     // Auto-run projection if we're on dashboard or if we came from dashboard quick add
-    // Only auto-run if the user has completed the onboarding step 2 (hasRunProjection)
-    if (localStorage.getItem('hasRunProjection') && (document.getElementById('dashboard').classList.contains('active') || 
-        document.getElementById('investment-form').getAttribute('data-from-dashboard') === 'true')) {
+    if (document.getElementById('dashboard').classList.contains('active') || 
+        document.getElementById('investment-form').getAttribute('data-from-dashboard') === 'true') {
         runProjection();
         // Clear the flag
         document.getElementById('investment-form').removeAttribute('data-from-dashboard');
@@ -2049,7 +2048,7 @@ function handleEventSubmit(e) {
     if (typeof lucide !== 'undefined') lucide.createIcons();
     
     const isDashboardActive = document.getElementById('dashboard').classList.contains('active');
-    if (isDashboardActive && localStorage.getItem('hasRunProjection')) {
+    if (isDashboardActive) {
         runProjection();
     }
     updateOnboardingGuide();
