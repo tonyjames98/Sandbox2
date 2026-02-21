@@ -133,17 +133,20 @@ function initTooltips() {
 function updateOnboardingGuide() {
     const totalNetWorth = investments.reduce((sum, inv) => sum + inv.amount, 0);
     const netWorthCard = document.querySelector('.kpi-card.primary');
-    const netWorthPlus = netWorthCard?.querySelector('.kpi-action');
+    const btnInvestment = document.getElementById('guide-add-investment');
+    const btnDebt = document.getElementById('guide-add-debt');
     const sampleContainer = document.getElementById('onboarding-sample-container');
     
-    // Clear existing pulse
-    netWorthCard?.classList.remove('guide-pulse');
-    netWorthPlus?.classList.remove('guide-pulse');
+    // Clear existing pulse/glow
+    netWorthCard?.classList.remove('guide-glow');
+    btnInvestment?.classList.remove('guide-pulse');
+    btnDebt?.classList.remove('guide-pulse');
     
-    // Only pulse if net worth is 0 and no investments added
+    // Only glow card and pulse buttons if net worth is 0 and no investments added
     if (totalNetWorth === 0 && investments.length === 0) {
-        netWorthCard?.classList.add('guide-pulse');
-        netWorthPlus?.classList.add('guide-pulse');
+        netWorthCard?.classList.add('guide-glow');
+        btnInvestment?.classList.add('guide-pulse');
+        btnDebt?.classList.add('guide-pulse');
         if (sampleContainer) sampleContainer.style.display = 'block';
     } else {
         if (sampleContainer) sampleContainer.style.display = 'none';
@@ -1153,8 +1156,8 @@ function switchTab(tabName) {
     if (pageTitle) {
         const titles = {
             'dashboard': 'Dashboard',
-            'investments': 'Investments',
-            'events': 'Income & Events',
+            'investments': 'Add Investments & Debt',
+            'events': 'Add Income & Events',
             'goals': 'Financial Goals',
             'export': 'Export & Share',
             'guide': 'User Guide',
@@ -1303,8 +1306,40 @@ function updateInvestmentDefaults() {
 
         // Update labels and visibility
         if (debtFields) debtFields.style.display = isDebt ? 'block' : 'none';
+        if (isDebt) {
+            populateDebtFundingSources();
+        }
         if (amountLabel) amountLabel.textContent = isDebt ? 'Total Debt Amount ($)' : 'Initial Amount ($)';
         if (returnLabel) returnLabel.textContent = isDebt ? 'Interest Rate (%)' : 'Return Rate (%)';
+    }
+}
+
+function populateDebtFundingSources() {
+    const fundingSourceSelect = document.getElementById('debt-funding-source');
+    if (!fundingSourceSelect) return;
+
+    // Preserve the current value if any
+    const currentValue = fundingSourceSelect.value;
+    const form = document.getElementById('investment-form');
+    const editingId = form.getAttribute('data-edit-id');
+
+    fundingSourceSelect.innerHTML = `
+        <option value="proportional">Proportional (All Assets)</option>
+        <option value="virtual">Virtual Balance (Income)</option>
+    `;
+
+    investments.forEach(inv => {
+        if (inv.type !== 'Debt' && inv.id !== editingId) {
+            const option = document.createElement('option');
+            option.value = inv.id;
+            option.textContent = inv.name;
+            fundingSourceSelect.appendChild(option);
+        }
+    });
+
+    // Re-set the value if it still exists in the list
+    if (currentValue && fundingSourceSelect.querySelector(`option[value="${currentValue}"]`)) {
+        fundingSourceSelect.value = currentValue;
     }
 }
 
@@ -1374,7 +1409,9 @@ function editInvestment(id) {
     const debtFields = document.getElementById('debt-fields');
     if (debtFields) debtFields.style.display = isDebt ? 'block' : 'none';
     if (isDebt) {
+        populateDebtFundingSources();
         document.getElementById('debt-payment').value = investment.monthlyPayment || 0;
+        document.getElementById('debt-funding-source').value = investment.fundingSource || 'proportional';
         document.getElementById('investment-amount-label').textContent = 'Total Debt Amount ($)';
         document.getElementById('investment-return-label').textContent = 'Interest Rate (%)';
     } else {
@@ -1420,6 +1457,7 @@ function handleInvestmentSubmit(e) {
         returnRate: parseFloat(document.getElementById('investment-return').value),
         targetAllocation: existingInv ? (existingInv.targetAllocation || 0) : 0,
         monthlyPayment: document.getElementById('investment-type').value === 'Debt' ? (parseFloat(document.getElementById('debt-payment').value) || 0) : 0,
+        fundingSource: document.getElementById('investment-type').value === 'Debt' ? document.getElementById('debt-funding-source').value : null,
         createdAt: editId ? existingInv.createdAt : new Date().toISOString()
     };
     
@@ -2336,9 +2374,12 @@ function resetWhatIfSliders() {
 }
 
 function runProjection() {
-    const years = parseInt(document.getElementById('projection-years-input').value);
-    if (years < 1 || years > 60) {
-        alert('Please enter a valid number of years (1-60)');
+    const yearsInput = document.getElementById('projection-years-input');
+    if (!yearsInput) return;
+    
+    const years = parseInt(yearsInput.value);
+    if (isNaN(years) || years < 1 || years > 60) {
+        // Just return during live typing, don't alert unless it's a final blur or something
         return;
     }
 
@@ -2460,9 +2501,19 @@ function calculateProjection(years) {
                     const actualPayment = Math.min(annualPayment, remainingDebt);
                     if (actualPayment > 0) {
                         currentBalances[debt.id] += actualPayment;
-                        // Find a source account with positive balance, or use virtual
-                        const potentialSources = Object.keys(currentBalances).filter(id => id !== debt.id && currentBalances[id] > 0);
-                        const sourceId = potentialSources.length > 0 ? potentialSources[0] : 'virtual';
+                        
+                        let sourceId;
+                        if (debt.fundingSource === 'proportional') {
+                            const potentialSources = Object.keys(currentBalances).filter(id => id !== debt.id && currentBalances[id] > 0);
+                            sourceId = potentialSources.length > 0 ? potentialSources[0] : 'virtual';
+                        } else {
+                            // Specified source (account ID or 'virtual')
+                            sourceId = debt.fundingSource || 'virtual';
+                            // If the source has no balance, fallback to virtual
+                            if (sourceId !== 'virtual' && (!currentBalances[sourceId] || currentBalances[sourceId] <= 0)) {
+                                sourceId = 'virtual';
+                            }
+                        }
                         
                         // Ensure sourceId exists in currentBalances to avoid NaN
                         if (currentBalances[sourceId] === undefined) {
@@ -2795,12 +2846,20 @@ function updateProjectedNetWorth() {
         el.textContent = `$${formatNumber(last.totalNetWorth)}`;
         
         if (labelEl) {
-            const years = projections.length - 1;
+            const targetYear = last.year;
             const inflationNote = last.isInflationAdjusted ? " (Today's Value)" : "";
-            labelEl.textContent = `In ${years} Years${inflationNote}`;
+            labelEl.textContent = `By ${targetYear}${inflationNote}`;
         }
     } else {
         el.textContent = '$0';
+    }
+}
+
+function updateProjectionPeriod(years) {
+    const input = document.getElementById('projection-years-input');
+    if (input) {
+        input.value = years;
+        runProjection();
     }
 }
 

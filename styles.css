@@ -48,6 +48,12 @@
     z-index: 10;
     position: relative;
     border: 2px solid var(--border-focus) !important;
+}
+
+.guide-glow {
+    position: relative;
+    border: 2px solid var(--border-focus) !important;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.4), inset 0 0 10px rgba(99, 102, 241, 0.1) !important;
     background: rgba(99, 102, 241, 0.05) !important;
 }
 
@@ -405,6 +411,41 @@ body {
     margin: 0;
 }
 
+.kpi-actions-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+}
+
+.kpi-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 0.5rem;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: var(--radius-md);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.kpi-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.kpi-btn i {
+    width: 14px;
+    height: 14px;
+}
+
 .kpi-action {
     position: absolute;
     bottom: 1rem;
@@ -419,6 +460,63 @@ body {
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    transition: all 0.2s;
+}
+
+.kpi-action:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.years-input-group {
+    background: var(--bg-card);
+    border: 1px solid var(--border-focus);
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--radius-xl);
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: fit-content;
+}
+
+.years-input-group label {
+    font-weight: 700;
+    color: var(--text-main);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.years-wrapper {
+    width: 100px !important;
+    background: var(--bg-main) !important;
+    border: 1px solid var(--border-light) !important;
+    border-radius: var(--radius-md) !important;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.years-wrapper input {
+    width: 50px !important;
+    font-weight: 800;
+    color: var(--border-focus);
+    text-align: right;
+    padding: 0 0.25rem 0 0 !important;
+    height: 100%;
+    background: transparent !important;
+    border: none !important;
+    flex: 1;
+}
+
+.years-wrapper .input-suffix {
+    padding-right: 0.5rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
 }
 
 .dashboard-charts {
@@ -1082,7 +1180,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
     background: var(--bg-card);
     border-radius: var(--radius-2xl);
     width: 100%;
-    max-width: 550px;
+    max-width: 650px;
     max-height: 90vh;
     overflow-y: auto;
     box-shadow: var(--shadow-xl);
@@ -1857,62 +1955,95 @@ th { background: var(--bg-main); font-weight: 700; color: var(--text-muted); }
     font-size: 0.875rem;
 }
 
-/* Dynamic Sliders In Forms */
+/* Dynamic Sliders In Forms - Rethinked for Desktop/Large Numbers */
 .slider-with-input {
     display: flex;
-    align-items: center;
-    gap: 1rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.625rem;
     margin-top: 0.5rem;
+    padding: 0.75rem;
+    background: rgba(15, 23, 42, 0.3);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    transition: all 0.2s ease;
+}
+
+.slider-with-input:focus-within {
+    border-color: var(--border-focus);
+    background: rgba(15, 23, 42, 0.5);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .slider-with-input input[type="range"] {
-    flex: 1;
+    width: 100%;
 }
 
 .slider-with-input input[type="number"] {
-    width: 100px !important;
-    text-align: right;
-    padding-right: 0.5rem;
+    width: 100% !important;
+    text-align: left;
+    padding: 0.625rem 0.75rem;
+    font-size: 1rem;
+    font-weight: 700;
+    background: transparent !important;
+    border: none !important;
+}
+
+.slider-with-input input[type="number"]:focus {
+    box-shadow: none !important;
 }
 
 .input-with-symbol {
     position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    transition: all 0.2s;
+}
+
+.input-with-symbol:focus-within {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .input-with-symbol::before {
     content: attr(data-symbol);
     position: absolute;
-    left: 0.75rem;
+    left: 1rem;
     color: var(--text-muted);
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
     pointer-events: none;
 }
 
 .input-with-symbol.currency input {
-    padding-left: 1.75rem;
+    padding-left: 2rem !important;
 }
 
 .input-with-symbol.currency::before {
     content: '$';
     position: absolute;
-    left: 0.75rem;
+    left: 1rem;
     color: var(--text-muted);
-    font-size: 0.875rem;
+    font-size: 1rem;
+    font-weight: 600;
     pointer-events: none;
 }
 
 .input-with-symbol.percent input {
-    padding-right: 1.75rem;
+    padding-right: 2rem !important;
 }
 
 .input-with-symbol.percent::after {
     content: '%';
     position: absolute;
-    right: 0.75rem;
+    right: 1rem;
     color: var(--text-muted);
-    font-size: 0.875rem;
+    font-size: 1rem;
+    font-weight: 600;
     pointer-events: none;
 }
 

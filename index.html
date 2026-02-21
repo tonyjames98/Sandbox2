@@ -115,11 +115,11 @@
                 </button>
                 <button class="nav-item" data-tab="investments">
                     <i data-lucide="briefcase"></i>
-                    <span>Investments/Debt</span>
+                    <span>Add Investments/Debt</span>
                 </button>
                 <button class="nav-item" data-tab="events">
                     <i data-lucide="calendar"></i>
-                    <span>Income/Events</span>
+                    <span>Add Income/Events</span>
                 </button>
                 <button class="nav-item" data-tab="goals">
                     <i data-lucide="target"></i>
@@ -172,19 +172,26 @@
                 <!-- Dashboard Tab -->
                 <div class="tab-content active" id="dashboard">
                     <div class="kpi-grid">
-                        <div class="kpi-card primary" onclick="quickAddInvestment('Cash')" role="button" style="cursor: pointer;" data-tooltip="Click to quickly add a new cash account or investment asset.">
+                        <div class="kpi-card primary" data-tooltip="Manage your current assets and liabilities.">
                             <div class="kpi-header">
                                 <span>Current Net Worth</span>
                                 <i data-lucide="wallet"></i>
                             </div>
                             <div class="kpi-value" id="current-net-worth">$0</div>
                             <div class="kpi-subtitle" id="onboarding-sample-container">
-                                <button class="btn-text btn-sm" onclick="event.stopPropagation(); loadSampleScenario()" style="color: var(--text-on-gradient); opacity: 0.9; text-decoration: underline;">
+                                <button class="btn-text btn-sm" onclick="loadSampleScenario()" style="color: var(--text-on-gradient); opacity: 0.9; text-decoration: underline;">
                                     Try Sample Scenario
                                 </button>
                             </div>
-                            <div class="kpi-action">
-                                <i data-lucide="plus"></i>
+                            <div class="kpi-actions-row">
+                                <button id="guide-add-investment" class="kpi-btn" onclick="quickAddInvestment('Stocks')">
+                                    <i data-lucide="plus"></i>
+                                    <span>Add Investment</span>
+                                </button>
+                                <button id="guide-add-debt" class="kpi-btn" onclick="quickAddInvestment('Debt')">
+                                    <i data-lucide="plus"></i>
+                                    <span>Add Debt</span>
+                                </button>
                             </div>
                         </div>
                         <div class="kpi-card secondary">
@@ -193,9 +200,14 @@
                                 <i data-lucide="trending-up"></i>
                             </div>
                             <div class="kpi-value" id="projected-net-worth-value">$0</div>
-                            <div class="kpi-subtitle" id="projection-years-label">In 30 Years</div>
+                            <div class="kpi-subtitle" id="projection-years-label">By 2054</div>
+                            <div class="kpi-actions-row">
+                                <button class="kpi-btn" onclick="updateProjectionPeriod(10)">10Y</button>
+                                <button class="kpi-btn" onclick="updateProjectionPeriod(20)">20Y</button>
+                                <button class="kpi-btn" onclick="updateProjectionPeriod(30)">30Y</button>
+                            </div>
                         </div>
-                        <div class="kpi-card accent" onclick="quickAddEvent()" role="button" style="cursor: pointer;" data-tooltip="Click to add financial events like salary, bonuses, or major purchases.">
+                        <div class="kpi-card accent" data-tooltip="Manage your financial events like salary, bonuses, or major purchases.">
                             <div class="kpi-header">
                                 <span>Portfolio Summary</span>
                                 <i data-lucide="pie-chart"></i>
@@ -211,8 +223,19 @@
                                 </div>
                             </div>
                             <div class="kpi-subtitle">&nbsp;</div>
-                            <div class="kpi-action">
-                                <i data-lucide="plus"></i>
+                            <div class="kpi-actions-row">
+                                <button class="kpi-btn" onclick="quickAddEventType('income')">
+                                    <i data-lucide="plus"></i>
+                                    <span>Income</span>
+                                </button>
+                                <button class="kpi-btn" onclick="quickAddEventType('expense')">
+                                    <i data-lucide="plus"></i>
+                                    <span>Expense</span>
+                                </button>
+                                <button class="kpi-btn" onclick="quickAddEventType('withdrawal')">
+                                    <i data-lucide="plus"></i>
+                                    <span>Withdrawal</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -250,14 +273,13 @@
                                         <i data-lucide="save"></i>
                                         <span>Set Baseline</span>
                                     </button>
-                                    <div class="input-group">
-                                        <label for="projection-years-input" data-tooltip="How many years into the future should we project?">Years</label>
-                                        <input type="number" id="projection-years-input" min="1" max="60" value="30">
+                                    <div class="input-group years-input-group">
+                                        <label for="projection-years-input" data-tooltip="How many years into the future should we project?">Projection Period</label>
+                                        <div class="input-with-symbol years-wrapper">
+                                            <input type="number" id="projection-years-input" min="1" max="60" value="30" oninput="runProjection()">
+                                            <span class="input-suffix">Years</span>
+                                        </div>
                                     </div>
-                                    <button class="btn btn-primary" onclick="runProjection()">
-                                        <i data-lucide="play"></i>
-                                        <span>Run</span>
-                                    </button>
                                 </div>
                             </div>
                             <div class="chart-container">
@@ -348,7 +370,7 @@
                 <!-- Investments Tab -->
                 <div class="tab-content" id="investments">
                     <div class="content-header">
-                        <h2>Investment/Debt Management</h2>
+                        <h2>Add Investments & Debt</h2>
                         <button class="btn btn-primary" onclick="showAddInvestmentModal()">
                             <i data-lucide="plus"></i>
                             <span>Add Investment/Debt</span>
@@ -374,7 +396,7 @@
                 <!-- Events Tab -->
                 <div class="tab-content" id="events">
                     <div class="content-header">
-                        <h2>Financial Events</h2>
+                        <h2>Add Income & Events</h2>
                         <div class="header-actions">
                             <button class="btn btn-outline" onclick="showAddEventModal('rebalancing')">
                                 <i data-lucide="refresh-cw"></i>
@@ -468,9 +490,10 @@
                                     <div class="form-group">
                                         <label>Expected Volatility (Std Dev %)</label>
                                         <div class="slider-with-input">
+                                            <div class="input-with-symbol percent">
+                                                <input type="number" id="mc-volatility" min="0" max="30" step="0.5" value="12" oninput="document.getElementById('mc-volatility-slider').value = this.value">
+                                            </div>
                                             <input type="range" id="mc-volatility-slider" min="0" max="30" step="0.5" value="12" oninput="document.getElementById('mc-volatility').value = this.value">
-                                            <input type="number" id="mc-volatility" min="0" max="30" step="0.5" value="12" oninput="document.getElementById('mc-volatility-slider').value = this.value">
-                                            <span class="input-suffix">%</span>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -558,11 +581,15 @@
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>Yearly Expenses ($)</label>
-                                        <input type="number" id="fire-expenses" value="60000" min="0">
+                                        <div class="input-with-symbol currency">
+                                            <input type="number" id="fire-expenses" value="60000" min="0">
+                                        </div>
                                     </div>
                                     <div class="form-group">
                                         <label>SWR (%)</label>
-                                        <input type="number" id="fire-swr" value="4" min="0" max="10" step="0.1">
+                                        <div class="input-with-symbol percent">
+                                            <input type="number" id="fire-swr" value="4" min="0" max="10" step="0.1">
+                                        </div>
                                     </div>
                                 </div>
                                 <button class="btn btn-outline btn-sm" onclick="runFireSWR()">Analyze FIRE</button>
@@ -590,11 +617,15 @@
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>Initial Principal ($)</label>
-                                        <input type="number" id="ci-principal" value="10000" min="0">
+                                        <div class="input-with-symbol currency">
+                                            <input type="number" id="ci-principal" value="10000" min="0">
+                                        </div>
                                     </div>
                                     <div class="form-group">
                                         <label>Annual Addition ($)</label>
-                                        <input type="number" id="ci-annual" value="12000" min="0">
+                                        <div class="input-with-symbol currency">
+                                            <input type="number" id="ci-annual" value="12000" min="0">
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="form-row">
@@ -604,7 +635,9 @@
                                     </div>
                                     <div class="form-group">
                                         <label>Interest Rate (%)</label>
-                                        <input type="number" id="ci-rate" value="7" min="0" max="100" step="0.1">
+                                        <div class="input-with-symbol percent">
+                                            <input type="number" id="ci-rate" value="7" min="0" max="100" step="0.1">
+                                        </div>
                                     </div>
                                 </div>
                                 <button class="btn btn-outline btn-sm" onclick="runCompoundInterest()">Calculate Growth</button>
@@ -638,11 +671,15 @@
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>Loan Amount ($)</label>
-                                        <input type="number" id="loan-amount" value="300000" min="0">
+                                        <div class="input-with-symbol currency">
+                                            <input type="number" id="loan-amount" value="300000" min="0">
+                                        </div>
                                     </div>
                                     <div class="form-group">
                                         <label>Interest Rate (%)</label>
-                                        <input type="number" id="loan-rate" value="6.5" min="0" max="100" step="0.1">
+                                        <div class="input-with-symbol percent">
+                                            <input type="number" id="loan-rate" value="6.5" min="0" max="100" step="0.1">
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="form-row">
@@ -799,11 +836,11 @@
         </button>
         <button class="bottom-nav-item" data-tab="investments">
             <i data-lucide="briefcase"></i>
-            <span>Assets/Debt</span>
+            <span>Add Investments/Debt</span>
         </button>
         <button class="bottom-nav-item" data-tab="events">
             <i data-lucide="calendar"></i>
-            <span>Events</span>
+            <span>Add Income/Events</span>
         </button>
         <button class="bottom-nav-item" data-tab="goals">
             <i data-lucide="target"></i>
@@ -846,31 +883,42 @@
                     <div class="form-group">
                         <label id="investment-amount-label">Initial Amount ($)</label>
                         <div class="slider-with-input">
-                            <input type="range" id="investment-amount-slider" min="0" max="1000000" step="1000" value="10000" oninput="document.getElementById('investment-amount').value = this.value">
                             <div class="input-with-symbol currency" data-symbol="$">
                                 <input type="number" id="investment-amount" required value="10000" oninput="document.getElementById('investment-amount-slider').value = this.value">
                             </div>
+                            <input type="range" id="investment-amount-slider" min="0" max="1000000" step="1000" value="10000" oninput="document.getElementById('investment-amount').value = this.value">
                         </div>
                     </div>
                     <div class="form-group">
                         <label id="investment-return-label" data-tooltip="The expected annual growth rate of this asset. Stocks average 7-10%, Cash 2-4%.">Return Rate (%)</label>
                         <div class="slider-with-input">
-                            <input type="range" id="investment-return-slider" min="-20" max="50" step="0.5" value="7" oninput="document.getElementById('investment-return').value = this.value">
                             <div class="input-with-symbol percent">
                                 <input type="number" id="investment-return" required value="7" step="0.1" oninput="document.getElementById('investment-return-slider').value = this.value">
                             </div>
+                            <input type="range" id="investment-return-slider" min="-20" max="50" step="0.5" value="7" oninput="document.getElementById('investment-return').value = this.value">
                         </div>
                     </div>
                 </div>
                 <div id="debt-fields" class="form-group" style="display: none;">
-                    <label data-tooltip="The fixed monthly amount you pay towards this debt.">Monthly Payment ($)</label>
-                    <div class="slider-with-input">
-                        <input type="range" id="debt-payment-slider" min="0" max="10000" step="100" value="0" oninput="document.getElementById('debt-payment').value = this.value">
-                        <div class="input-with-symbol currency" data-symbol="$">
-                            <input type="number" id="debt-payment" value="0" oninput="document.getElementById('debt-payment-slider').value = this.value">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label data-tooltip="The fixed monthly amount you pay towards this debt.">Monthly Payment ($)</label>
+                            <div class="slider-with-input">
+                                <div class="input-with-symbol currency" data-symbol="$">
+                                    <input type="number" id="debt-payment" value="0" oninput="document.getElementById('debt-payment-slider').value = this.value">
+                                </div>
+                                <input type="range" id="debt-payment-slider" min="0" max="10000" step="100" value="0" oninput="document.getElementById('debt-payment').value = this.value">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label data-tooltip="The asset account used to pay this debt.">Funding Source</label>
+                            <select id="debt-funding-source">
+                                <option value="proportional">Proportional (All Assets)</option>
+                                <option value="virtual">Virtual Balance (Income)</option>
+                            </select>
                         </div>
                     </div>
-                    <span class="input-hint">This amount will be deducted from your first asset/income every month to pay down this debt.</span>
+                    <span class="input-hint">This amount will be deducted from your selected funding source every month to pay down this debt.</span>
                 </div>
                 <div class="modal-footer">
                     <button type="button" id="delete-investment-btn" class="btn btn-danger" style="display: none; margin-right: auto;" onclick="deleteCurrentInvestment()">Delete Item</button>
@@ -947,10 +995,10 @@
                             <div class="form-group">
                                 <label id="event-amount-label" data-tooltip="The amount for this event. Positive for income, negative for expenses.">Value (Amount or %)</label>
                                 <div class="slider-with-input">
-                                    <input type="range" id="event-amount-slider" min="0" max="100000" step="100" value="0" oninput="document.getElementById('event-amount').value = this.value">
                                     <div class="input-with-symbol dynamic" id="event-amount-wrapper">
                                         <input type="number" id="event-amount" oninput="document.getElementById('event-amount-slider').value = this.value">
                                     </div>
+                                    <input type="range" id="event-amount-slider" min="0" max="100000" step="100" value="0" oninput="document.getElementById('event-amount').value = this.value">
                                 </div>
                             </div>
                         </div>
@@ -1061,7 +1109,9 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Target Amount ($)</label>
-                        <input type="number" id="goal-amount" required>
+                        <div class="input-with-symbol currency">
+                            <input type="number" id="goal-amount" required>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Target Year</label>
